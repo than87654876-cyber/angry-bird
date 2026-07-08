@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angry Birds 2D</title>
+  <link rel="stylesheet" href="index.css">
+  <!-- Matter.js Physics Engine CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+
+<body>
+
+  <!-- Responsive Game Container -->
+  <div class="game-viewport" id="gameContainer">
+
+    <!-- Gameplay Canvas -->
+    <canvas id="gameCanvas" width="1200" height="600"></canvas>
+
+    <!-- Gameplay HUD (Heads-up display) -->
+    <div id="gameUi" class="hud-bar screen-overlay hidden" style="background:none; backdrop-filter:none; z-index: 5;">
+      <div class="hud-left">
+        <button id="hudPause" class="hud-btn">⏸ Tạm dừng</button>
+        <div id="hudLevelName" class="hud-level-name">Level 1</div>
+      </div>
+
+      <div class="hud-center">
+        <div class="hud-score-display">Điểm: <span id="hudScore">0</span></div>
+
+        <!-- Stars Gauge -->
+        <div class="stars-gauge-container">
+          <div class="stars-gauge">
+            <div id="starsGaugeFill" class="stars-gauge-fill"></div>
+          </div>
+          <span id="starMarker1" class="star-marker active">★</span>
+          <span id="starMarker2" class="star-marker">★</span>
+          <span id="starMarker3" class="star-marker">★</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <div id="hudBirdsQueue" class="birds-queue-hud">
+          <!-- Bird queue icons will be generated here -->
+        </div>
+        <button id="hudReset" class="hud-btn">🔄 Thử lại</button>
+      </div>
+    </div>
+
+    <!-- Screen Overlay 1: Splash Screen -->
+    <div id="splashScreen" class="screen-overlay">
+      <div class="splash-logo">💥🐦</div>
+      <h1>Angry Birds 2D</h1>
+      <p style="margin-bottom: 25px; opacity: 0.8; font-size: 1.1rem; letter-spacing: 0.5px;">Trải nghiệm vật lý phá hủy
+        đỉnh cao</p>
+      <button id="btnSplashStart" class="btn-primary">Vào Game</button>
+    </div>
+
+    <!-- Screen Overlay 2: Main Menu -->
+    <div id="mainMenu" class="screen-overlay hidden">
+      <h1>Angry Birds</h1>
+
+      <!-- Settings Panel inside Menu -->
+      <div class="settings-panel">
+        <h2 style="font-size: 1.3rem; margin-bottom: 5px; text-align: center; color: #38bdf8;">Cài đặt âm thanh</h2>
+        <div class="setting-row">
+          <span>Nhạc nền</span>
+          <label class="switch">
+            <input type="checkbox" id="toggleMusic" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <span>Hiệu ứng SFX</span>
+          <label class="switch">
+            <input type="checkbox" id="toggleSound" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="menu-options">
+        <button id="btnPlay" class="btn-primary">Chơi Ngay</button>
+        <button id="btnCredits" class="btn-secondary">Giới thiệu</button>
+      </div>
+    </div>
+
+    <!-- Screen Overlay 3: Level Selection -->
+    <div id="levelSelectScreen" class="screen-overlay hidden">
+      <h2>Chọn Màn Chơi</h2>
+      <div class="level-select-container">
+        <div class="level-grid" id="levelGrid">
+          <!-- Level Cards dynamically populated by Javascript -->
+        </div>
+        <button id="btnMenuBack" class="btn-secondary" style="margin-top: 15px;">Quay lại</button>
+      </div>
+    </div>
+
+    <!-- Screen Overlay 4: Pause Screen -->
+    <div id="pauseScreen" class="screen-overlay hidden">
+      <h2>Tạm Dừng</h2>
+      <p style="margin-bottom: 20px; opacity: 0.7;">Trò chơi đang tạm dừng...</p>
+      <div class="menu-options" style="width: 220px;">
+        <button id="btnResume" class="btn-primary">Tiếp tục</button>
+        <button id="btnPauseRestart" class="btn-secondary">Chơi lại màn</button>
+        <button id="btnPauseMenu" class="btn-secondary">Chọn màn khác</button>
+      </div>
+    </div>
+
+    <!-- Screen Overlay 5: Win Screen -->
+    <div id="winScreen" class="screen-overlay hidden">
+      <h2 id="winLevelTitle" style="color: #4CAF50; text-shadow: 0 0 15px rgba(76,175,80,0.3);">Màn chơi hoàn thành!
+      </h2>
+
+      <!-- Stars container -->
+      <div class="stars-container" id="winStars">
+        <span class="win-star">★</span>
+        <span class="win-star">★</span>
+        <span class="win-star">★</span>
+      </div>
+
+      <p id="winScore" style="font-size: 1.3rem; font-weight: 600; margin: 10px 0; color: #ffeb3b;">Điểm đạt được: 0</p>
+
+      <div class="modal-buttons">
+        <button id="btnWinRestart" class="btn-secondary">Chơi Lại</button>
+        <button id="btnWinSelect" class="btn-secondary">Chọn Màn</button>
+        <button id="btnWinNext" class="btn-primary">Màn Tiếp</button>
+      </div>
+    </div>
+
+    <!-- Screen Overlay 6: Lose Screen -->
+    <div id="loseScreen" class="screen-overlay hidden">
+      <h2 id="loseLevelTitle" style="color: #f44336; text-shadow: 0 0 15px rgba(244,67,54,0.3);">Hết chim bắn!</h2>
+      <p style="opacity: 0.8; margin-bottom: 5px;">Bạn đã dùng hết số lượng chim nhưng heo vẫn còn sống.</p>
+      <p id="loseScore" style="font-size: 1.3rem; font-weight: 600; margin: 10px 0; color: #9e9e9e;">Điểm: 0</p>
+
+      <div class="modal-buttons">
+        <button id="btnLoseRestart" class="btn-primary">Thử Lại</button>
+        <button id="btnLoseSelect" class="btn-secondary">Chọn Màn</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Boot script module -->
+  <script type="module">
+    import { Game } from './src/game.js';
+    Game.init();
+  </script>
+</body>
+
+</html>
