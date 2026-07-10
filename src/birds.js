@@ -562,9 +562,6 @@ export class Bird {
   draw(ctx, cameraX) {
     if (!this.body) return;
 
-  draw(ctx, cameraX) {
-    if (!this.body) return;
-
     // Draw laser segment if present
     if (this.laserLine) {
       ctx.save();
