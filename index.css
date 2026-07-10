@@ -240,6 +240,8 @@ input:checked+.slider:before {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 .level-grid {
@@ -400,6 +402,19 @@ input:checked+.slider:before {
 
 .bird-white {
   background-color: #ECEFF1;
+}
+
+.bird-green {
+  background-color: #880d0d;
+  border: 1px solid #5a0404;
+}
+
+.bird-orange {
+  background-color: #FF9800;
+}
+
+.bird-purple {
+  background-color: #9C27B0;
 }
 
 /* Stars gauge progress bar */

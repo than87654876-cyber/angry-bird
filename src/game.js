@@ -45,8 +45,8 @@ class GameController {
     this.isDraggingSling = false;
     this.dragStart = { x: 0, y: 0 };
     this.dragCurrent = { x: 0, y: 0 };
-    this.maxDragDistance = 110;
-    this.launchMultiplier = 0.24; // Increased launch multiplier for longer range shots
+    this.maxDragDistance = 120;
+    this.launchMultiplier = 0.28; // Balanced launch multiplier for standard shots
 
     // Camera system
     this.cameraX = 0;
@@ -72,6 +72,11 @@ class GameController {
 
     // Level elapsed time for physics settling grace period
     this.levelTime = 0;
+
+    // Map dragging state
+    this.isDraggingMap = false;
+    this.mapDragStartPointerX = 0;
+    this.mapDragStartCameraX = 0;
   }
 
   init() {
@@ -497,17 +502,37 @@ class GameController {
         this.dragStart = { x: sling.x, y: sling.y };
         this.dragCurrent = { x: worldX, y: worldY };
         AudioSynth.play("stretch");
+        return;
       }
     } else if (this.activeBird && this.activeBird.isFired && !this.activeBird.abilityTriggered) {
       // Clicked mid-air: trigger special bird skill
       this.canvasClickedForAbility = true;
+      return;
+    }
+
+    // Start map dragging if camera is idle
+    if (this.cameraState === "idle") {
+      this.isDraggingMap = true;
+      this.mapDragStartPointerX = pos.x;
+      this.mapDragStartCameraX = this.cameraX;
     }
   }
 
   handlePointerMove(e) {
-    if (this.state !== GameState.PLAYING || !this.isDraggingSling) return;
+    if (this.state !== GameState.PLAYING) return;
 
     const pos = this.getPointerCanvasPos(e);
+
+    if (this.isDraggingMap) {
+      const dx = pos.x - this.mapDragStartPointerX;
+      const mapWidth = this.currentLevelConfig ? this.currentLevelConfig.width : this.width;
+      this.cameraX = this.mapDragStartCameraX - dx;
+      this.cameraX = Math.max(0, Math.min(this.cameraX, mapWidth - this.width));
+      return;
+    }
+
+    if (!this.isDraggingSling) return;
+
     const worldX = pos.x + this.cameraX;
     const worldY = pos.y;
 
@@ -536,6 +561,11 @@ class GameController {
   }
 
   handlePointerUp() {
+    if (this.isDraggingMap) {
+      this.isDraggingMap = false;
+      return;
+    }
+
     if (this.state !== GameState.PLAYING || !this.isDraggingSling) return;
     this.isDraggingSling = false;
 
@@ -782,7 +812,7 @@ class GameController {
     // Deduce stars count
     let starsEarned = 1; // Completed clears gets 1 star
     if (finalScore >= t.two) starsEarned = 2;
-    if (finalScore >= t.three && birdsRemaining >= 1) starsEarned = 3;
+    if (finalScore >= t.three) starsEarned = 3;
 
     // Unlock in LocalStorage
     this.saveState = SaveManager.unlockLevel(this.currentLevelId, starsEarned, finalScore);
@@ -834,7 +864,7 @@ class GameController {
 
     // Unlock bird achievements progression
     if (this.currentLevelId === 10) {
-      this.unlockAchievement("unlockGreen", "Mở Khóa Chim Xanh", "Hoàn thành Level 10 - Chim Boomerang đã gia nhập đội hình!");
+      this.unlockAchievement("unlockGreen", "Mở Khóa Big Red", "Hoàn thành Level 10 - Người khổng lồ Big Red (Terence) đã gia nhập đội hình!");
     } else if (this.currentLevelId === 12) {
       this.unlockAchievement("unlockOrange", "Mở Khóa Chim Cam", "Hoàn thành Level 12 - Chim Cam Phình To sẵn sàng xuất kích!");
     } else if (this.currentLevelId === 15) {
@@ -1362,7 +1392,7 @@ class GameController {
       { key: "tripleKill", name: "Đại Sát Thủ (Triple)", desc: "Tiêu diệt 3 chú heo trong cùng một lượt bắn.", icon: "🎯" },
       { key: "kingSlayer", name: "Kẻ Diệt Vua", desc: "Hạ gục Vua Heo Boss tại Level 10.", icon: "👑" },
       { key: "threeStarsMaster", name: "Bậc Thầy 3 Sao", desc: "Đạt đánh giá 3 sao ở bất kỳ màn chơi nào.", icon: "⭐" },
-      { key: "unlockGreen", name: "Mở Khóa Chim Xanh", desc: "Chiêu mộ thành công Chim Boomerang.", icon: "🪃" },
+      { key: "unlockGreen", name: "Mở Khóa Big Red", desc: "Chiêu mộ thành công Người khổng lồ Big Red.", icon: "🔴" },
       { key: "unlockOrange", name: "Mở Khóa Chim Cam", desc: "Chiêu mộ thành công Chim Phình To.", icon: "🎈" },
       { key: "unlockPurple", name: "Mở Khóa Chim Tím", desc: "Chiêu mộ thành công Chim Laser.", icon: "⚡" }
     ];

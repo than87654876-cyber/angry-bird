@@ -1,3 +1,5 @@
+import { Levels } from './levels.js';
+
 const SAVE_KEY = 'angryBirdSave';
 const CURRENT_VERSION = 2;
 
@@ -100,6 +102,26 @@ export const SaveManager = {
         parsed.achievements = { ...initial.achievements, ...parsed.achievements };
         parsed.stats = { ...initial.stats, ...parsed.stats };
         updated = true;
+      }
+
+      // Recalculate stars based on bestScore to fix historical/corrupted star counts
+      if (parsed.levels && Array.isArray(parsed.levels)) {
+        parsed.levels.forEach(lvlRecord => {
+          if (lvlRecord.completed && lvlRecord.bestScore > 0) {
+            const lvlConfig = Levels.find(l => l.id === lvlRecord.id);
+            if (lvlConfig) {
+              const t = lvlConfig.starThresholds;
+              let correctStars = 1;
+              if (lvlRecord.bestScore >= t.three) correctStars = 3;
+              else if (lvlRecord.bestScore >= t.two) correctStars = 2;
+              
+              if (lvlRecord.stars === undefined || correctStars > lvlRecord.stars) {
+                lvlRecord.stars = correctStars;
+                updated = true;
+              }
+            }
+          }
+        });
       }
 
       if (updated) {

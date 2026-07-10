@@ -43,8 +43,8 @@ export class Bird {
         this.mass = 2.2;
         break;
       case "green":
-        this.radius = 16;
-        this.mass = 1.2;
+        this.radius = 35;
+        this.mass = 9.0;
         break;
       case "orange":
         this.radius = 14;
@@ -118,6 +118,9 @@ export class Bird {
           this.triggerAbility(game);
         }
       }, 1500);
+    } else if (this.type === "green" && !this.abilityTriggered) {
+      this.abilityTriggered = true;
+      this.triggerBigRedShockwave(game);
     }
   }
 
@@ -419,28 +422,6 @@ export class Bird {
         x: this.body.velocity.x * 0.85,
         y: -9
       });
-    } else if (this.type === "green") {
-      // Boomerang: reverse X and slightly boost Y
-      AudioSynth.play("yellow_boost");
-      const currentVel = this.body.velocity;
-      Matter.Body.setVelocity(this.body, {
-        x: -currentVel.x * 1.15,
-        y: currentVel.y - 4.5
-      });
-      // Smoke puff
-      for (let i = 0; i < 6; i++) {
-        game.particles.push({
-          type: "smoke",
-          x: this.x,
-          y: this.y,
-          vx: (Math.random() * 4 - 2),
-          vy: (Math.random() * 4 - 2),
-          radius: Math.random() * 4 + 4,
-          color: "rgba(46, 204, 113, 0.6)",
-          life: 1.0,
-          decay: 0.04
-        });
-      }
     } else if (this.type === "orange") {
       // Inflate: scale body 3.2x, apply massive force to surrounding blocks/pigs
       AudioSynth.play("yellow_boost");
@@ -486,7 +467,7 @@ export class Bird {
       }, 1200);
 
     } else if (this.type === "purple") {
-      // Laser: fire ray along flight path penetrating glass/wood, stopped by stone
+      // Laser: fire ray along flight path penetrating all blocks (glass, wood, stone)
       AudioSynth.play("yellow_boost");
       this.laserFired = true;
 
@@ -494,7 +475,7 @@ export class Bird {
       let angle = Math.atan2(currentVel.y, currentVel.x);
       if (currentVel.x === 0 && currentVel.y === 0) angle = 0;
 
-      const range = 250;
+      const range = 850;
       const startX = this.x;
       const startY = this.y;
       let endX = startX + Math.cos(angle) * range;
@@ -529,15 +510,9 @@ export class Bird {
 
       for (let i = 0; i < hitCandidates.length; i++) {
         const candidate = hitCandidates[i];
-        if (candidate.entity.type === "stone") {
-          // Truncate laser here
-          this.laserLine.endX = startX + Math.cos(angle) * candidate.dist;
-          this.laserLine.endY = startY + Math.sin(angle) * candidate.dist;
-          break;
-        }
-        // Deal 100 laser damage
+        // Deal 400 laser damage (penetrates everything)
         if (typeof candidate.entity.takeDamage === 'function') {
-          candidate.entity.takeDamage(100, game);
+          candidate.entity.takeDamage(400, game);
         }
       }
 
@@ -557,6 +532,78 @@ export class Bird {
         });
       }
     }
+  }
+
+  triggerBigRedShockwave(game) {
+    const Matter = window.Matter;
+    if (!Matter) return;
+
+    AudioSynth.play("explode");
+    game.triggerShake(12);
+
+    const radius = 135;
+    const forceFactor = 0.12;
+    const maxDamage = 180;
+
+    // Spawn visual shockwave particle
+    game.particles.push({
+      type: "shockwave",
+      x: this.x,
+      y: this.y,
+      radius: 10,
+      maxRadius: radius,
+      life: 0.85,
+      decay: 0.08
+    });
+
+    // Spawn dust particles
+    for (let i = 0; i < 12; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 2;
+      game.particles.push({
+        type: "smoke",
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 0.5,
+        radius: Math.random() * 6 + 5,
+        color: "rgba(230, 200, 180, 0.6)",
+        life: 1.0,
+        decay: 0.05
+      });
+    }
+
+    // Apply force and damage
+    const bodies = Matter.Composite.allBodies(game.physics.world);
+    bodies.forEach(otherBody => {
+      if (otherBody === this.body) return;
+
+      const entity = otherBody.plugin.entity;
+      if (!entity || entity.isBroken || entity.isDead || entity.shouldRemove) return;
+
+      const dx = otherBody.position.x - this.x;
+      const dy = otherBody.position.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < radius) {
+        const dirX = dist === 0 ? 0 : dx / dist;
+        const dirY = dist === 0 ? -1 : dy / dist;
+        const factor = (radius - dist) / radius;
+
+        if (!otherBody.isStatic) {
+          const force = factor * forceFactor * 0.06 * otherBody.mass;
+          Matter.Body.applyForce(otherBody, otherBody.position, {
+            x: dirX * force,
+            y: dirY * force
+          });
+        }
+
+        const damage = factor * maxDamage;
+        if (entity && typeof entity.takeDamage === 'function') {
+          entity.takeDamage(damage, game);
+        }
+      }
+    });
   }
 
   draw(ctx, cameraX) {
@@ -622,8 +669,8 @@ export class Bird {
           ctx.fill();
           break;
         case "green":
-          // Green feather particles
-          ctx.fillStyle = `rgba(46, 204, 113, ${t.life * 0.65})`;
+          // Big Red dark red feather particles
+          ctx.fillStyle = `rgba(136, 13, 13, ${t.life * 0.7})`;
           ctx.translate(t.x - cameraX, t.y);
           ctx.rotate(t.angle || 0);
           ctx.beginPath();
@@ -1018,47 +1065,71 @@ export class Bird {
     // Tail feathers
     ctx.fillStyle = "#000";
     ctx.beginPath();
-    ctx.rect(-rad - 4, -4, 4, 8);
+    ctx.moveTo(-rad, -3);
+    ctx.lineTo(-rad - 12, -12);
+    ctx.lineTo(-rad - 8, 0);
+    ctx.lineTo(-rad - 12, 12);
+    ctx.lineTo(-rad, 3);
+    ctx.closePath();
     ctx.fill();
 
-    // Green Body
-    ctx.fillStyle = "#2ecc71";
-    ctx.strokeStyle = "#27ae60";
-    ctx.lineWidth = 2.5;
+    // Big Dark Red Body (Terence color: dark crimson)
+    ctx.fillStyle = "#880d0d";
+    ctx.strokeStyle = "#5a0404";
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(0, 0, rad, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // Belly
-    ctx.fillStyle = "#FFF";
+    // Spots on the face (Terence spots)
+    ctx.fillStyle = "#5c0505";
+    ctx.beginPath();
+    ctx.arc(-rad * 0.5, -rad * 0.3, rad * 0.18, 0, Math.PI * 2);
+    ctx.arc(-rad * 0.6, rad * 0.1, rad * 0.14, 0, Math.PI * 2);
+    ctx.arc(rad * 0.1, rad * 0.5, rad * 0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Beige belly (bottom semi-circle arc)
+    ctx.fillStyle = "#D7CCC8";
     ctx.beginPath();
     ctx.arc(0, rad * 0.2, rad * 0.8, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.lineTo(rad * 0.8 * Math.cos(Math.PI * 0.1), rad * 0.2);
     ctx.closePath();
     ctx.fill();
 
-    // Eyes
+    // Eyes (very angry look)
     ctx.fillStyle = "#FFF";
     ctx.beginPath();
-    ctx.arc(rad * 0.2, -rad * 0.2, rad * 0.25, 0, Math.PI * 2);
-    ctx.arc(rad * 0.5, -rad * 0.2, rad * 0.25, 0, Math.PI * 2);
+    ctx.arc(rad * 0.2, -rad * 0.15, rad * 0.22, 0, Math.PI * 2);
+    ctx.arc(rad * 0.5, -rad * 0.15, rad * 0.22, 0, Math.PI * 2);
     ctx.fill();
 
     // Pupils
     ctx.fillStyle = "#000";
     ctx.beginPath();
-    ctx.arc(rad * 0.25, -rad * 0.18, rad * 0.08, 0, Math.PI * 2);
-    ctx.arc(rad * 0.45, -rad * 0.18, rad * 0.08, 0, Math.PI * 2);
+    ctx.arc(rad * 0.24, -rad * 0.12, rad * 0.08, 0, Math.PI * 2);
+    ctx.arc(rad * 0.46, -rad * 0.12, rad * 0.08, 0, Math.PI * 2);
     ctx.fill();
 
-    // Beak: long curved shape pointing right (like a toucan/boomerang)
-    ctx.fillStyle = "#FF9800";
-    ctx.strokeStyle = "#E65100";
-    ctx.lineWidth = 1.2;
+    // Heavy Angry Black Eyebrows
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 4.5;
     ctx.beginPath();
-    ctx.moveTo(rad * 0.3, -rad * 0.1);
-    ctx.quadraticCurveTo(rad * 1.3, -rad * 0.4, rad * 1.5, rad * 0.1);
-    ctx.quadraticCurveTo(rad * 0.9, rad * 0.4, rad * 0.3, rad * 0.2);
+    ctx.moveTo(rad * 0.02, -rad * 0.38);
+    ctx.lineTo(rad * 0.38, -rad * 0.24);
+    ctx.moveTo(rad * 0.65, -rad * 0.38);
+    ctx.lineTo(rad * 0.28, -rad * 0.24);
+    ctx.stroke();
+
+    // Yellow Beak
+    ctx.fillStyle = "#FFB300";
+    ctx.strokeStyle = "#B77A00";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(rad * 0.32, -rad * 0.08);
+    ctx.lineTo(rad * 0.76, 0);
+    ctx.lineTo(rad * 0.32, rad * 0.18);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();

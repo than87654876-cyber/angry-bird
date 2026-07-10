@@ -326,7 +326,7 @@ export const Levels = [
   },
   {
     id: 11,
-    name: "Màn 11: Chim Boomerang Vòng Góc",
+    name: "Màn 11: Sự Càn Quét Của Big Red",
     difficulty: "Medium",
     width: 1800,
     sling: { x: 200, y: 440 },
@@ -424,7 +424,7 @@ export const Levels = [
   },
   {
     id: 15,
-    name: "Màn 15: Liên Quân Boomerang & Phình To",
+    name: "Màn 15: Liên Quân Big Red & Phình To",
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
