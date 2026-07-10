@@ -713,15 +713,26 @@ class GameController {
 
     // 1. Draw beautiful Sky-to-Horizon Backdrop Gradients
     const skyGrad = ctx.createLinearGradient(0, 0, 0, this.height);
-    skyGrad.addColorStop(0, "#0b0c10"); // deep space
-    skyGrad.addColorStop(0.3, "#1f2833"); // midnight blue
-    skyGrad.addColorStop(0.7, "#2e3b4e"); // indigo skyline
-    skyGrad.addColorStop(0.9, "#34495e"); // soft dusk
+    skyGrad.addColorStop(0, "#4be0ff");    // Bright sky blue
+    skyGrad.addColorStop(0.4, "#a3f3ff");  // Light blue-cyan
+    skyGrad.addColorStop(0.75, "#e1faff"); // Soft white-cyan
+    skyGrad.addColorStop(1.0, "#f9fdff");  // Warm pale horizon
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, this.width, this.height);
 
+    // Draw Glowing Sun (Behind clouds)
+    const sunGrad = ctx.createRadialGradient(850 - this.cameraX * 0.15, 120, 10, 850 - this.cameraX * 0.15, 120, 220);
+    sunGrad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+    sunGrad.addColorStop(0.2, "rgba(255, 253, 200, 0.85)");
+    sunGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.3)");
+    sunGrad.addColorStop(1.0, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = sunGrad;
+    ctx.beginPath();
+    ctx.arc(850 - this.cameraX * 0.15, 120, 220, 0, Math.PI * 2);
+    ctx.fill();
+
     // 2. Draw Clouds
-    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.65)"; // Soft white daylight clouds
     this.clouds.forEach(cloud => {
       ctx.beginPath();
       // Draw fluffy cloud using multiple overlapping arcs
@@ -732,27 +743,36 @@ class GameController {
     });
 
     // 3. Draw hills in the far background
-    ctx.fillStyle = "#1e272e";
+    // Far layer (slower parallax, light blue-green/teal)
+    ctx.fillStyle = "#8fe1d9";
     ctx.beginPath();
-    ctx.ellipse(300 - this.cameraX * 0.2, 560, 400, 100, 0, 0, Math.PI * 2);
-    ctx.ellipse(900 - this.cameraX * 0.2, 580, 500, 120, 0, 0, Math.PI * 2);
+    ctx.ellipse(300 - this.cameraX * 0.15, 540, 450, 110, 0, 0, Math.PI * 2);
+    ctx.ellipse(950 - this.cameraX * 0.15, 550, 550, 130, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = "#2d3748";
+    // Mid layer (medium parallax, emerald teal)
+    ctx.fillStyle = "#5cbfae";
     ctx.beginPath();
-    ctx.ellipse(600 - this.cameraX * 0.4, 570, 450, 80, 0, 0, Math.PI * 2);
+    ctx.ellipse(600 - this.cameraX * 0.3, 550, 480, 95, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Near layer (faster parallax, rich green)
+    ctx.fillStyle = "#3ca98a";
+    ctx.beginPath();
+    ctx.ellipse(150 - this.cameraX * 0.45, 565, 300, 75, 0, 0, Math.PI * 2);
+    ctx.ellipse(1080 - this.cameraX * 0.45, 570, 380, 85, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // 4. Draw Ground
-    ctx.fillStyle = "#1a202c"; // dark ground structure
+    ctx.fillStyle = "#6d4c41"; // Warm soil brown structure
     ctx.fillRect(0, this.height - 30, this.width, 30);
 
     // Top grass layer
-    ctx.fillStyle = "#27ae60";
+    ctx.fillStyle = "#8cdb34"; // Bright vibrant green grass
     ctx.fillRect(0, this.height - 34, this.width, 4);
 
     // Draw little grass decorations waving
-    ctx.strokeStyle = "#2ecc71";
+    ctx.strokeStyle = "#8cdb34";
     ctx.lineWidth = 1.5;
     const waveOffset = Math.sin(timestampToSec() * 4) * 3;
     for (let x = 20; x < this.width; x += 60) {
@@ -875,7 +895,7 @@ class GameController {
     const gravityY = 1.0;
     const pointsCount = 30; // More dots for longer range
 
-    ctx.fillStyle = "rgba(255, 235, 59, 0.65)";
+    ctx.fillStyle = "rgba(255, 112, 0, 0.85)"; // High-contrast orange-red trajectory line
     for (let i = 1; i <= pointsCount; i++) {
       const t = i * 0.075; // time increments (seconds)
 
@@ -887,7 +907,7 @@ class GameController {
 
       // Fade out dots as they go further
       const opacity = 1.0 - (i / pointsCount);
-      ctx.fillStyle = `rgba(255, 235, 59, ${opacity * 0.8})`;
+      ctx.fillStyle = `rgba(255, 112, 0, ${opacity * 0.85})`;
 
       ctx.beginPath();
       ctx.arc(x - this.cameraX, y, 4.5 - (i * 0.12), 0, Math.PI * 2);
