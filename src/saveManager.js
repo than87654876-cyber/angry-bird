@@ -52,18 +52,40 @@ export const SaveManager = {
       if (!parsed.levels || !Array.isArray(parsed.levels)) {
         parsed.levels = initial.levels;
         updated = true;
+      } else if (parsed.levels.length < initial.levels.length) {
+        const existingLevels = parsed.levels;
+        parsed.levels = initial.levels.map(initLvl => {
+          const existing = existingLevels.find(l => l.id === initLvl.id);
+          return existing ? { ...initLvl, ...existing } : initLvl;
+        });
+        updated = true;
       }
+
       if (!parsed.settings) {
         parsed.settings = initial.settings;
         updated = true;
+      } else {
+        const before = JSON.stringify(parsed.settings);
+        parsed.settings = { ...initial.settings, ...parsed.settings };
+        if (JSON.stringify(parsed.settings) !== before) updated = true;
       }
+
       if (!parsed.achievements) {
         parsed.achievements = initial.achievements;
         updated = true;
+      } else {
+        const before = JSON.stringify(parsed.achievements);
+        parsed.achievements = { ...initial.achievements, ...parsed.achievements };
+        if (JSON.stringify(parsed.achievements) !== before) updated = true;
       }
+
       if (!parsed.stats) {
         parsed.stats = initial.stats;
         updated = true;
+      } else {
+        const before = JSON.stringify(parsed.stats);
+        parsed.stats = { ...initial.stats, ...parsed.stats };
+        if (JSON.stringify(parsed.stats) !== before) updated = true;
       }
       
       // Handle version upgrades/migration if needed
@@ -123,7 +145,7 @@ export const SaveManager = {
     }
 
     // Unlock the next level
-    if (levelId < 10) {
+    if (levelId < state.levels.length) {
       const nextLvlRecord = state.levels[levelId];
       if (nextLvlRecord) {
         nextLvlRecord.unlocked = true;
