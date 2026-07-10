@@ -105,6 +105,9 @@ export class MaterialBlock {
   }
 
   explode(game) {
+    // Trigger screen shake
+    game.triggerShake(12);
+
     // TNT explosion details
     const radius = 185;
     const forceFactor = 0.14;

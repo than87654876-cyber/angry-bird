@@ -60,6 +60,10 @@ class GameController {
     // Background decoration
     this.clouds = [];
     this.generateClouds();
+    this.balloons = [];
+    this.leaves = [];
+    this.screenShake = 0;
+    this.generateBackgroundExtras();
 
     // Ability listening
     this.canvasClickedForAbility = false;
@@ -130,6 +134,33 @@ class GameController {
         h: Math.random() * 30 + 20
       });
     }
+  }
+
+  generateBackgroundExtras() {
+    this.balloons = [
+      { x: 350, y: 140, speed: 0.02, size: 40, floatPhase: Math.random() * Math.PI },
+      { x: 900, y: 80, speed: 0.015, size: 30, floatPhase: Math.random() * Math.PI }
+    ];
+
+    this.leaves = [];
+    for (let i = 0; i < 20; i++) {
+      this.leaves.push({
+        x: Math.random() * this.width * 1.5,
+        y: Math.random() * this.height,
+        vx: -0.4 - Math.random() * 0.4,
+        vy: 0.3 + Math.random() * 0.4,
+        w: Math.random() * 5 + 5,
+        h: Math.random() * 3 + 3,
+        angle: Math.random() * Math.PI * 2,
+        swaySpeed: Math.random() * 0.03 + 0.02,
+        swayAmplitude: Math.random() * 1.2 + 0.8,
+        color: Math.random() > 0.5 ? "rgba(46, 117, 89, 0.4)" : "rgba(139, 195, 74, 0.35)"
+      });
+    }
+  }
+
+  triggerShake(magnitude) {
+    this.screenShake = magnitude;
   }
 
   populateLevelSelect() {
@@ -540,6 +571,35 @@ class GameController {
       }
     });
 
+    // Update drifting hot-air balloons
+    this.balloons.forEach(b => {
+      b.x -= b.speed * dt;
+      b.floatPhase += 0.01 * dt;
+      if (b.x < -b.size) {
+        b.x = (this.currentLevelConfig ? this.currentLevelConfig.width : this.width) + 50;
+      }
+    });
+
+    // Update falling leaves
+    this.leaves.forEach(leaf => {
+      leaf.x += (leaf.vx + Math.sin(timestampToSec() * leaf.swaySpeed * 10) * leaf.swayAmplitude * 0.15) * dt;
+      leaf.y += leaf.vy * dt;
+      leaf.angle += 0.01 * dt;
+      if (leaf.y > this.height) {
+        leaf.y = -20;
+        leaf.x = Math.random() * (this.currentLevelConfig ? this.currentLevelConfig.width : this.width);
+      }
+      if (leaf.x < -20) {
+        leaf.x = (this.currentLevelConfig ? this.currentLevelConfig.width : this.width) + 20;
+      }
+    });
+
+    // Decay screen shake
+    if (this.screenShake > 0) {
+      this.screenShake -= 0.5 * dt;
+      if (this.screenShake < 0) this.screenShake = 0;
+    }
+
     // 5. Check level transitions, win/lose criteria, and camera tracking
     if (this.state === GameState.PLAYING) {
       this.updateCamera(dt);
@@ -711,6 +771,12 @@ class GameController {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
+    // Apply Screen Shake
+    const shakeX = (Math.random() - 0.5) * this.screenShake;
+    const shakeY = (Math.random() - 0.5) * this.screenShake;
+    ctx.save();
+    ctx.translate(shakeX, shakeY);
+
     // 1. Draw beautiful Sky-to-Horizon Backdrop Gradients
     const skyGrad = ctx.createLinearGradient(0, 0, 0, this.height);
     skyGrad.addColorStop(0, "#4be0ff");    // Bright sky blue
@@ -740,6 +806,11 @@ class GameController {
       ctx.arc(cloud.x - this.cameraX + cloud.w * 0.3, cloud.y - cloud.h * 0.4, cloud.h * 1.2, 0, Math.PI * 2);
       ctx.arc(cloud.x - this.cameraX + cloud.w * 0.6, cloud.y, cloud.h * 0.9, 0, Math.PI * 2);
       ctx.fill();
+    });
+
+    // Draw drifting hot-air balloons (Behind background hills)
+    this.balloons.forEach(b => {
+      this.drawHotAirBalloon(ctx, b.x - this.cameraX * 0.1, b.y, b.size, b.floatPhase);
     });
 
     // 3. Draw hills in the far background
@@ -805,6 +876,69 @@ class GameController {
 
     // 9. Draw Particle effects (feathers, shockwaves, scores)
     this.drawParticles(ctx);
+
+    // 10. Draw falling leaves (Foreground layer)
+    this.leaves.forEach(leaf => {
+      ctx.save();
+      ctx.translate(leaf.x - this.cameraX, leaf.y);
+      ctx.rotate(leaf.angle);
+      ctx.fillStyle = leaf.color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, leaf.w, leaf.h, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+
+    ctx.restore(); // Restore screen shake translation matrix
+  }
+
+  drawHotAirBalloon(ctx, x, y, size, floatPhase) {
+    ctx.save();
+    // Apply subtle vertical floating animation
+    const offsetY = Math.sin(floatPhase) * 6;
+    ctx.translate(x, y + offsetY);
+
+    // 1. Balloon Envelope (Teardrop shape pointing down)
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.4, size * 0.45, 0.15 * Math.PI, 0.85 * Math.PI, true);
+    ctx.lineTo(-size * 0.16, 0);
+    ctx.lineTo(size * 0.16, 0);
+    ctx.closePath();
+
+    // Main color: Red/Orange
+    ctx.fillStyle = "#e64a19";
+    ctx.fill();
+
+    // Side stripes (White)
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(0, -size * 0.85);
+    ctx.quadraticCurveTo(-size * 0.18, -size * 0.4, -size * 0.07, 0);
+    ctx.lineTo(size * 0.07, 0);
+    ctx.quadraticCurveTo(size * 0.18, -size * 0.4, 0, -size * 0.85);
+    ctx.closePath();
+    ctx.fill();
+
+    // 2. Basket Cords (Thin lines)
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.1, 0);
+    ctx.lineTo(-size * 0.08, size * 0.16);
+    ctx.moveTo(size * 0.1, 0);
+    ctx.lineTo(size * 0.08, size * 0.16);
+    ctx.stroke();
+
+    // 3. Basket (Small brown square)
+    ctx.fillStyle = "#8d6e63";
+    ctx.strokeStyle = "#5d4037";
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.rect(-size * 0.1, size * 0.16, size * 0.2, size * 0.14);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   drawSlingshot(ctx, drawBackBandOnly) {

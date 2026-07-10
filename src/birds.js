@@ -59,7 +59,13 @@ export class Bird {
         if (vel > 1.5) {
           this.trailTimer++;
           if (this.trailTimer % 2 === 0) {
-            this.trail.push({ x: this.x, y: this.y, life: 1.0 });
+            this.trail.push({ 
+              x: this.x, 
+              y: this.y, 
+              life: 1.0,
+              size: Math.random() * 4 + 3,
+              angle: Math.random() * Math.PI * 2
+            });
             if (this.trail.length > 25) {
               this.trail.shift();
             }
@@ -185,6 +191,7 @@ export class Bird {
       }
       this.shouldRemove = true;
       AudioSynth.play("explode");
+      game.triggerShake(16); // High magnitude shake for heavy explosion
 
       // Explode physics & damage
       const radius = 165;
@@ -292,6 +299,7 @@ export class Bird {
           this.shouldRemove = true;
 
           AudioSynth.play("explode");
+          game.triggerShake(10); // Moderate screen shake
           const radius = 150;
           const forceFactor = 0.12;
           const maxDamage = 250;
@@ -397,10 +405,53 @@ export class Bird {
     // Draw trail
     this.trail.forEach(t => {
       ctx.save();
-      ctx.fillStyle = `rgba(220, 220, 220, ${t.life * 0.35})`;
-      ctx.beginPath();
-      ctx.arc(t.x - cameraX, t.y, this.radius * 0.45 * t.life, 0, Math.PI * 2);
-      ctx.fill();
+      switch (this.type) {
+        case "red":
+          // Red feather particles: slightly elongated red ovals that rotate
+          ctx.fillStyle = `rgba(229, 57, 53, ${t.life * 0.6})`;
+          ctx.translate(t.x - cameraX, t.y);
+          ctx.rotate(t.angle || 0);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, (t.size || 4) * t.life, (t.size || 4) * 0.45 * t.life, 0, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case "yellow":
+          // Yellow stars/sparks: small glowing yellow diamonds
+          ctx.fillStyle = `rgba(253, 216, 53, ${t.life * 0.8})`;
+          ctx.translate(t.x - cameraX, t.y);
+          ctx.rotate(Math.PI / 4); // Rotated square = diamond
+          ctx.beginPath();
+          ctx.rect(-(t.size || 3) * t.life, -(t.size || 3) * t.life, (t.size || 3) * 2 * t.life, (t.size || 3) * 2 * t.life);
+          ctx.fill();
+          break;
+        case "blue":
+          // Blue bubbles: light blue ring circles
+          ctx.strokeStyle = `rgba(41, 182, 246, ${t.life * 0.7})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(t.x - cameraX, t.y, (t.size || 4) * 1.1 * t.life, 0, Math.PI * 2);
+          ctx.stroke();
+          break;
+        case "black":
+          // Black smoke puff: dark grey fading circles
+          ctx.fillStyle = `rgba(55, 71, 79, ${t.life * 0.45})`;
+          ctx.beginPath();
+          ctx.arc(t.x - cameraX, t.y, (t.size || 5) * 1.4 * t.life, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case "white":
+          // White cloud puff: soft white circles
+          ctx.fillStyle = `rgba(255, 255, 255, ${t.life * 0.6})`;
+          ctx.beginPath();
+          ctx.arc(t.x - cameraX, t.y, (t.size || 6) * 1.3 * t.life, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        default:
+          ctx.fillStyle = `rgba(220, 220, 220, ${t.life * 0.35})`;
+          ctx.beginPath();
+          ctx.arc(t.x - cameraX, t.y, this.radius * 0.45 * t.life, 0, Math.PI * 2);
+          ctx.fill();
+      }
       ctx.restore();
     });
 
