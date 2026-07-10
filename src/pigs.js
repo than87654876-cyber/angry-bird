@@ -93,6 +93,10 @@ export class Pig {
     AudioSynth.play("pig");
     game.addScore(this.points, this.x, this.y - this.radius);
 
+    if (typeof game.onPigKilled === 'function') {
+      game.onPigKilled(this.type);
+    }
+
     // Spawn green smoke popping particles
     const popParticles = Math.floor(Math.random() * 4) + 6; // 6 to 9 particles
     for (let i = 0; i < popParticles; i++) {

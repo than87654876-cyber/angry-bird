@@ -64,16 +64,17 @@ canvas {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
   padding: 20px;
 }
 
 .screen-overlay.hidden {
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  display: none !important;
 }
 
 /* Titles */
@@ -522,4 +523,89 @@ input:checked+.slider:before {
   .level-card .level-num {
     font-size: 1.2rem;
   }
+}
+
+/* Achievement Toast Notification */
+.achievement-toast {
+  position: absolute;
+  top: -90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(13, 27, 42, 0.96);
+  border: 2px solid #ffb300;
+  border-radius: 14px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 12px 35px rgba(255, 179, 0, 0.4);
+  transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  width: 320px;
+  pointer-events: none;
+}
+.achievement-toast.show {
+  top: 15px;
+}
+.achievement-icon {
+  font-size: 2.2rem;
+  animation: logoBounce 0.8s infinite alternate ease-in-out;
+}
+.achievement-details {
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  text-align: left;
+}
+.achievement-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #ffb300;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.achievement-desc {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+/* Achievement Gallery Cards */
+.achievement-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 10px 15px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+.achievement-card.unlocked {
+  border-color: #ffb300;
+  background: rgba(255, 179, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(255, 179, 0, 0.1);
+}
+.achievement-card.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+.achievement-card-icon {
+  font-size: 2.2rem;
+}
+.achievement-card-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.achievement-card-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #fff;
+}
+.achievement-card-desc {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-top: 1px;
 }

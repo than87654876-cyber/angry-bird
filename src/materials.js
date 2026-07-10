@@ -74,6 +74,9 @@ export class MaterialBlock {
       AudioSynth.play(this.type);
       // Spawn Debris
       this.spawnDebris(game);
+      if (typeof game.onBlockDestroyed === 'function') {
+        game.onBlockDestroyed();
+      }
     }
   }
 

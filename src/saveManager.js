@@ -1,5 +1,5 @@
 const SAVE_KEY = 'angryBirdSave';
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 2;
 
 export const SaveManager = {
   getInitialState() {
@@ -8,7 +8,7 @@ export const SaveManager = {
       currentLevel: 1,
       totalStars: 0,
       totalScore: 0,
-      levels: Array.from({ length: 10 }, (_, i) => ({
+      levels: Array.from({ length: 20 }, (_, i) => ({
         id: i + 1,
         unlocked: i === 0,
         completed: false,
@@ -18,6 +18,19 @@ export const SaveManager = {
       settings: {
         music: true,
         sound: true
+      },
+      achievements: {
+        firstBlood: false,
+        destroy100: false,
+        tripleKill: false,
+        kingSlayer: false,
+        threeStarsMaster: false,
+        unlockGreen: false,
+        unlockOrange: false,
+        unlockPurple: false
+      },
+      stats: {
+        blocksDestroyed: 0
       }
     };
   },
@@ -44,16 +57,26 @@ export const SaveManager = {
         parsed.settings = initial.settings;
         updated = true;
       }
+      if (!parsed.achievements) {
+        parsed.achievements = initial.achievements;
+        updated = true;
+      }
+      if (!parsed.stats) {
+        parsed.stats = initial.stats;
+        updated = true;
+      }
       
       // Handle version upgrades/migration if needed
       if (!parsed.version || parsed.version < CURRENT_VERSION) {
         parsed.version = CURRENT_VERSION;
         // Merge with initial structure to make sure new fields aren't missing
         parsed.levels = initial.levels.map(initLvl => {
-          const existing = parsed.levels.find(l => l.id === initLvl.id);
+          const existing = parsed.levels ? parsed.levels.find(l => l.id === initLvl.id) : null;
           return existing ? { ...initLvl, ...existing } : initLvl;
         });
         parsed.settings = { ...initial.settings, ...parsed.settings };
+        parsed.achievements = { ...initial.achievements, ...parsed.achievements };
+        parsed.stats = { ...initial.stats, ...parsed.stats };
         updated = true;
       }
 
@@ -126,5 +149,28 @@ export const SaveManager = {
     state.settings[key] = value;
     this.save(state);
     return state;
+  },
+
+  unlockAchievement(key) {
+    const state = this.load();
+    if (!state.achievements) {
+      state.achievements = this.getInitialState().achievements;
+    }
+    if (!state.achievements[key]) {
+      state.achievements[key] = true;
+      this.save(state);
+      return true; // Newly unlocked
+    }
+    return false; // Already unlocked
+  },
+
+  incrementStat(key, amount = 1) {
+    const state = this.load();
+    if (!state.stats) {
+      state.stats = this.getInitialState().stats;
+    }
+    state.stats[key] = (state.stats[key] || 0) + amount;
+    this.save(state);
+    return state.stats[key];
   }
 };

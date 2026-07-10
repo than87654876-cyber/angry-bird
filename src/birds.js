@@ -42,6 +42,21 @@ export class Bird {
         this.radius = 20;
         this.mass = 2.2;
         break;
+      case "green":
+        this.radius = 16;
+        this.mass = 1.2;
+        break;
+      case "orange":
+        this.radius = 14;
+        this.mass = 2.0;
+        this.isInflated = false;
+        break;
+      case "purple":
+        this.radius = 16;
+        this.mass = 1.0;
+        this.laserFired = false;
+        this.laserLine = null;
+        break;
       default:
         this.radius = 18;
         this.mass = 1.0;
@@ -77,6 +92,14 @@ export class Bird {
     // Decay trail particles
     this.trail.forEach(t => t.life -= 0.04);
     this.trail = this.trail.filter(t => t.life > 0);
+
+    // Decay laser segment if purple bird fired
+    if (this.laserLine) {
+      this.laserLine.life -= 0.08 * dt;
+      if (this.laserLine.life <= 0) {
+        this.laserLine = null;
+      }
+    }
 
     // Update breathing phase
     this.breathingPhase += 0.08;
@@ -396,11 +419,166 @@ export class Bird {
         x: this.body.velocity.x * 0.85,
         y: -9
       });
+    } else if (this.type === "green") {
+      // Boomerang: reverse X and slightly boost Y
+      AudioSynth.play("yellow_boost");
+      const currentVel = this.body.velocity;
+      Matter.Body.setVelocity(this.body, {
+        x: -currentVel.x * 1.15,
+        y: currentVel.y - 4.5
+      });
+      // Smoke puff
+      for (let i = 0; i < 6; i++) {
+        game.particles.push({
+          type: "smoke",
+          x: this.x,
+          y: this.y,
+          vx: (Math.random() * 4 - 2),
+          vy: (Math.random() * 4 - 2),
+          radius: Math.random() * 4 + 4,
+          color: "rgba(46, 204, 113, 0.6)",
+          life: 1.0,
+          decay: 0.04
+        });
+      }
+    } else if (this.type === "orange") {
+      // Inflate: scale body 3.2x, apply massive force to surrounding blocks/pigs
+      AudioSynth.play("yellow_boost");
+      this.isInflated = true;
+      Matter.Body.scale(this.body, 3.2, 3.2);
+      this.radius = 45;
+
+      const radius = 180;
+      const forceFactor = 0.22;
+      const bodies = Matter.Composite.allBodies(game.physics.world);
+      bodies.forEach(ob => {
+        if (ob === this.body) return;
+        const dx = ob.position.x - this.x;
+        const dy = ob.position.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < radius) {
+          const factor = (radius - dist) / radius;
+          const dirX = dist === 0 ? 0 : dx / dist;
+          const dirY = dist === 0 ? -1 : dy / dist;
+
+          if (!ob.isStatic) {
+            const force = factor * forceFactor * 0.08 * ob.mass;
+            Matter.Body.applyForce(ob, ob.position, {
+              x: dirX * force,
+              y: dirY * force
+            });
+          }
+
+          if (ob.plugin.entity && typeof ob.plugin.entity.takeDamage === 'function') {
+            ob.plugin.entity.takeDamage(factor * 100, game);
+          }
+        }
+      });
+
+      // Deflate after 1.2 seconds
+      setTimeout(() => {
+        if (this.body && !this.shouldRemove) {
+          Matter.Body.scale(this.body, 1/3.2, 1/3.2);
+          this.radius = 14;
+          this.isInflated = false;
+        }
+      }, 1200);
+
+    } else if (this.type === "purple") {
+      // Laser: fire ray along flight path penetrating glass/wood, stopped by stone
+      AudioSynth.play("yellow_boost");
+      this.laserFired = true;
+
+      const currentVel = this.body.velocity;
+      let angle = Math.atan2(currentVel.y, currentVel.x);
+      if (currentVel.x === 0 && currentVel.y === 0) angle = 0;
+
+      const range = 250;
+      const startX = this.x;
+      const startY = this.y;
+      let endX = startX + Math.cos(angle) * range;
+      let endY = startY + Math.sin(angle) * range;
+
+      this.laserLine = { startX, startY, endX, endY, life: 1.0 };
+
+      const bodies = Matter.Composite.allBodies(game.physics.world);
+      
+      const hitCandidates = [];
+      bodies.forEach(ob => {
+        if (ob === this.body) return;
+        const entity = ob.plugin.entity;
+        if (!entity || entity.isBroken || entity.isDead || entity.shouldRemove) return;
+
+        const dx = ob.position.x - startX;
+        const dy = ob.position.y - startY;
+        const projDist = dx * Math.cos(angle) + dy * Math.sin(angle);
+        if (projDist < 0 || projDist > range) return;
+
+        const projX = startX + Math.cos(angle) * projDist;
+        const projY = startY + Math.sin(angle) * projDist;
+        const distToLine = Math.sqrt((ob.position.x - projX) ** 2 + (ob.position.y - projY) ** 2);
+
+        const hitRadius = ob.circleRadius || 25;
+        if (distToLine < hitRadius) {
+          hitCandidates.push({ body: ob, entity, dist: projDist });
+        }
+      });
+
+      hitCandidates.sort((a, b) => a.dist - b.dist);
+
+      for (let i = 0; i < hitCandidates.length; i++) {
+        const candidate = hitCandidates[i];
+        if (candidate.entity.type === "stone") {
+          // Truncate laser here
+          this.laserLine.endX = startX + Math.cos(angle) * candidate.dist;
+          this.laserLine.endY = startY + Math.sin(angle) * candidate.dist;
+          break;
+        }
+        // Deal 100 laser damage
+        if (typeof candidate.entity.takeDamage === 'function') {
+          candidate.entity.takeDamage(100, game);
+        }
+      }
+
+      // Spawn fire sparks at end of laser
+      for (let i = 0; i < 8; i++) {
+        const sparkAngle = Math.random() * Math.PI * 2;
+        const sparkSpeed = Math.random() * 3 + 2;
+        game.particles.push({
+          type: "fire",
+          x: this.laserLine.endX,
+          y: this.laserLine.endY,
+          vx: Math.cos(sparkAngle) * sparkSpeed,
+          vy: Math.sin(sparkAngle) * sparkSpeed,
+          radius: Math.random() * 3 + 2,
+          life: 1.0,
+          decay: 0.06
+        });
+      }
     }
   }
 
   draw(ctx, cameraX) {
     if (!this.body) return;
+
+  draw(ctx, cameraX) {
+    if (!this.body) return;
+
+    // Draw laser segment if present
+    if (this.laserLine) {
+      ctx.save();
+      ctx.strokeStyle = `rgba(186, 104, 200, ${this.laserLine.life})`; // Glowing purple
+      ctx.lineWidth = 6 * this.laserLine.life;
+      ctx.lineCap = "round";
+      ctx.shadowColor = "#ba68c8";
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.moveTo(this.laserLine.startX - cameraX, this.laserLine.startY);
+      ctx.lineTo(this.laserLine.endX - cameraX, this.laserLine.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // Draw trail
     this.trail.forEach(t => {
@@ -446,6 +624,31 @@ export class Bird {
           ctx.arc(t.x - cameraX, t.y, (t.size || 6) * 1.3 * t.life, 0, Math.PI * 2);
           ctx.fill();
           break;
+        case "green":
+          // Green feather particles
+          ctx.fillStyle = `rgba(46, 204, 113, ${t.life * 0.65})`;
+          ctx.translate(t.x - cameraX, t.y);
+          ctx.rotate(t.angle || 0);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, (t.size || 4) * t.life, (t.size || 4) * 0.45 * t.life, 0, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case "orange":
+          // Orange circular trails
+          ctx.fillStyle = `rgba(230, 74, 25, ${t.life * 0.6})`;
+          ctx.beginPath();
+          ctx.arc(t.x - cameraX, t.y, (t.size || 4) * t.life, 0, Math.PI * 2);
+          ctx.fill();
+          break;
+        case "purple":
+          // Purple diamonds
+          ctx.fillStyle = `rgba(186, 104, 200, ${t.life * 0.8})`;
+          ctx.translate(t.x - cameraX, t.y);
+          ctx.rotate(Math.PI / 4);
+          ctx.beginPath();
+          ctx.rect(-(t.size || 3) * t.life, -(t.size || 3) * t.life, (t.size || 3) * 2 * t.life, (t.size || 3) * 2 * t.life);
+          ctx.fill();
+          break;
         default:
           ctx.fillStyle = `rgba(220, 220, 220, ${t.life * 0.35})`;
           ctx.beginPath();
@@ -486,6 +689,15 @@ export class Bird {
         break;
       case "white":
         this.drawWhiteBird(ctx, rad);
+        break;
+      case "green":
+        this.drawGreenBird(ctx, rad);
+        break;
+      case "orange":
+        this.drawOrangeBird(ctx, rad);
+        break;
+      case "purple":
+        this.drawPurpleBird(ctx, rad);
         break;
     }
 
@@ -800,6 +1012,152 @@ export class Bird {
     ctx.lineTo(0, rad * 0.15);
     ctx.lineTo(rad * 0.15, -rad * 0.05);
     ctx.lineTo(0, -rad * 0.08);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  drawGreenBird(ctx, rad) {
+    // Tail feathers
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.rect(-rad - 4, -4, 4, 8);
+    ctx.fill();
+
+    // Green Body
+    ctx.fillStyle = "#2ecc71";
+    ctx.strokeStyle = "#27ae60";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Belly
+    ctx.fillStyle = "#FFF";
+    ctx.beginPath();
+    ctx.arc(0, rad * 0.2, rad * 0.8, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.closePath();
+    ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = "#FFF";
+    ctx.beginPath();
+    ctx.arc(rad * 0.2, -rad * 0.2, rad * 0.25, 0, Math.PI * 2);
+    ctx.arc(rad * 0.5, -rad * 0.2, rad * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupils
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(rad * 0.25, -rad * 0.18, rad * 0.08, 0, Math.PI * 2);
+    ctx.arc(rad * 0.45, -rad * 0.18, rad * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Beak: long curved shape pointing right (like a toucan/boomerang)
+    ctx.fillStyle = "#FF9800";
+    ctx.strokeStyle = "#E65100";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(rad * 0.3, -rad * 0.1);
+    ctx.quadraticCurveTo(rad * 1.3, -rad * 0.4, rad * 1.5, rad * 0.1);
+    ctx.quadraticCurveTo(rad * 0.9, rad * 0.4, rad * 0.3, rad * 0.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  drawOrangeBird(ctx, rad) {
+    // Orange Body
+    ctx.fillStyle = "#FF9800";
+    ctx.strokeStyle = "#E65100";
+    ctx.lineWidth = this.isInflated ? 4 : 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, rad, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Beige belly
+    ctx.fillStyle = "#FFE0B2";
+    ctx.beginPath();
+    ctx.arc(0, rad * 0.3, rad * 0.7, Math.PI * 0.15, Math.PI * 0.85);
+    ctx.closePath();
+    ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = "#FFF";
+    ctx.beginPath();
+    const eyeSize = rad * 0.22;
+    ctx.arc(rad * 0.15, -rad * 0.15, eyeSize, 0, Math.PI * 2);
+    ctx.arc(rad * 0.45, -rad * 0.15, eyeSize, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupils
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(rad * 0.18, -rad * 0.12, rad * 0.08, 0, Math.PI * 2);
+    ctx.arc(rad * 0.42, -rad * 0.12, rad * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Beak
+    ctx.fillStyle = "#FFEB3B";
+    ctx.strokeStyle = "#F57F17";
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(rad * 0.3, -rad * 0.05);
+    ctx.lineTo(rad * 0.65, 0.02);
+    ctx.lineTo(rad * 0.3, rad * 0.15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  drawPurpleBird(ctx, rad) {
+    // Sleek angular shape
+    ctx.fillStyle = "#9C27B0";
+    ctx.strokeStyle = "#7B1FA2";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(rad, 0);
+    ctx.lineTo(-rad * 0.5, -rad * 0.95);
+    ctx.lineTo(-rad * 0.8, -rad * 0.2);
+    ctx.lineTo(-rad * 0.8, rad * 0.2);
+    ctx.lineTo(-rad * 0.5, rad * 0.95);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Laser mask forehead pattern
+    ctx.fillStyle = "#E040FB";
+    ctx.beginPath();
+    ctx.moveTo(0, -rad * 0.5);
+    ctx.lineTo(rad * 0.4, 0);
+    ctx.lineTo(0, rad * 0.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Eyes
+    ctx.fillStyle = "#FFF";
+    ctx.beginPath();
+    ctx.arc(rad * 0.1, -rad * 0.18, rad * 0.26, 0, Math.PI * 2);
+    ctx.arc(rad * 0.42, -rad * 0.18, rad * 0.26, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pupils
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.arc(rad * 0.15, -rad * 0.14, rad * 0.08, 0, Math.PI * 2);
+    ctx.arc(rad * 0.38, -rad * 0.14, rad * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Beak
+    ctx.fillStyle = "#FFEB3B";
+    ctx.strokeStyle = "#F57F17";
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    ctx.moveTo(rad * 0.25, -rad * 0.08);
+    ctx.lineTo(rad * 0.75, 0.02);
+    ctx.lineTo(rad * 0.25, rad * 0.18);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();

@@ -59,11 +59,13 @@ class GameController {
 
     // Background decoration
     this.clouds = [];
-    this.generateClouds();
     this.balloons = [];
     this.leaves = [];
     this.screenShake = 0;
-    this.generateBackgroundExtras();
+    this.currentWeather = "clear";
+    this.currentTimeOfDay = "day";
+    this.rainDrops = [];
+    this.snowFlakes = [];
 
     // Ability listening
     this.canvasClickedForAbility = false;
@@ -120,12 +122,16 @@ class GameController {
     } else if (newState === GameState.LOSE) {
       document.getElementById("loseScreen").classList.remove("hidden");
       this.showLoseModal();
+    } else if (newState === "ACHIEVEMENTS") {
+      document.getElementById("achievementsScreen").classList.remove("hidden");
     }
   }
 
   generateClouds() {
     this.clouds = [];
-    for (let i = 0; i < 6; i++) {
+    // Cloudy weather gets double clouds
+    const cloudCount = (this.currentWeather === "cloudy") ? 10 : 5;
+    for (let i = 0; i < cloudCount; i++) {
       this.clouds.push({
         x: Math.random() * this.width * 1.5,
         y: Math.random() * 150 + 30,
@@ -155,6 +161,27 @@ class GameController {
         swaySpeed: Math.random() * 0.03 + 0.02,
         swayAmplitude: Math.random() * 1.2 + 0.8,
         color: Math.random() > 0.5 ? "rgba(46, 117, 89, 0.4)" : "rgba(139, 195, 74, 0.35)"
+      });
+    }
+
+    this.rainDrops = [];
+    for (let i = 0; i < 60; i++) {
+      this.rainDrops.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        length: Math.random() * 15 + 15,
+        speed: Math.random() * 12 + 15
+      });
+    }
+
+    this.snowFlakes = [];
+    for (let i = 0; i < 40; i++) {
+      this.snowFlakes.push({
+        x: Math.random() * this.width,
+        y: Math.random() * this.height,
+        radius: Math.random() * 2 + 1.5,
+        speed: Math.random() * 1.5 + 1.0,
+        swayPhase: Math.random() * Math.PI * 2
       });
     }
   }
@@ -217,6 +244,12 @@ class GameController {
     this.canvasClickedForAbility = false;
     this.levelTime = 0; // Reset level grace time
 
+    // Setup weather options randomly
+    const weatherOptions = ["clear", "cloudy", "rain", "snow"];
+    const timeOfDayOptions = ["day", "sunset", "night"];
+    this.currentWeather = weatherOptions[Math.floor(Math.random() * weatherOptions.length)];
+    this.currentTimeOfDay = timeOfDayOptions[Math.floor(Math.random() * timeOfDayOptions.length)];
+
     // Reset physics world
     this.physics.clearWorld();
     this.physics.setupLevelBoundaries(this.currentLevelConfig.width, this.height);
@@ -243,12 +276,21 @@ class GameController {
     // Set up birds queue
     this.birdsQueue = [...this.currentLevelConfig.birds];
     this.activeBird = null;
+    this.totalBirds = this.birdsQueue.length; // Store total birds at start
+    this.birdsFired = 0;
+    this.pigsKilled = 0;
+    this.totalPigs = this.entities.filter(ent => ent instanceof Pig).length;
+    this.pigsKilledInCurrentTurn = 0;
+
+    // Generate weather-related clouds and elements
+    this.generateClouds();
+    this.generateBackgroundExtras();
 
     // Load first bird onto slingshot
     this.loadNextBird();
 
     // Setup HUD UI details
-    document.getElementById("hudLevelName").innerText = this.currentLevelConfig.name;
+    document.getElementById("hudLevelName").innerText = `${this.currentLevelConfig.name} (${this.currentTimeOfDay.toUpperCase()}, ${this.currentWeather.toUpperCase()})`;
     this.updateHud();
 
     // Transition to playing
@@ -344,6 +386,13 @@ class GameController {
     document.getElementById("btnMenuBack").addEventListener("click", () => {
       this.changeState(GameState.MENU);
     });
+    document.getElementById("btnAchievements").addEventListener("click", () => {
+      this.renderAchievements();
+      this.changeState("ACHIEVEMENTS");
+    });
+    document.getElementById("btnAchievementsBack").addEventListener("click", () => {
+      this.changeState(GameState.MENU);
+    });
     document.getElementById("btnCredits").addEventListener("click", () => {
       alert("ANGRY BIRDS 2D\n\n Dùng những chú chim giận dữ hạ gục những kẻ thù");
     });
@@ -373,7 +422,7 @@ class GameController {
       this.changeState(GameState.LEVEL_SELECT);
     });
     document.getElementById("btnWinNext").addEventListener("click", () => {
-      if (this.currentLevelId < 10) {
+      if (this.currentLevelId < 20) {
         this.startLevel(this.currentLevelId + 1);
       }
     });
@@ -509,6 +558,8 @@ class GameController {
       });
 
       this.activeBird.isFired = true;
+      this.birdsFired++;
+      this.pigsKilledInCurrentTurn = 0;
       AudioSynth.play("launch");
 
       // Shift camera state
@@ -724,8 +775,8 @@ class GameController {
     const t = this.currentLevelConfig.starThresholds;
 
     // Remaining birds score bonus
-    const birdsRemaining = this.birdsQueue.length;
-    const birdBonus = birdsRemaining * 1000;
+    const birdsRemaining = this.totalBirds - this.birdsFired;
+    const birdBonus = Math.max(0, birdsRemaining) * 1000;
     const finalScore = this.score + birdBonus;
 
     // Deduce stars count
@@ -736,9 +787,13 @@ class GameController {
     // Unlock in LocalStorage
     this.saveState = SaveManager.unlockLevel(this.currentLevelId, starsEarned, finalScore);
 
-    // UI Updates
+    // Achievements master check
+    if (starsEarned === 3) {
+      this.unlockAchievement("threeStarsMaster", "Bậc Thầy 3 Sao", "Đạt đánh giá 3 sao ở bất kỳ màn chơi nào!");
+    }
+
+    // UI Title Updates
     document.getElementById("winLevelTitle").innerText = `${this.currentLevelConfig.name} Hoàn thành!`;
-    document.getElementById("winScore").innerText = `Score: ${this.score} + Chim dư: ${birdBonus} = ${finalScore}`;
 
     // Star animations
     const starsContainer = document.getElementById("winStars");
@@ -753,9 +808,42 @@ class GameController {
       starsContainer.appendChild(star);
     }
 
+    // Animated Count-Ups for Statistics
+    const duration = 1200; // 1.2 seconds of animation
+    
+    // 1. Animated Score
+    this.animateCountUp("statWinScore", 0, finalScore, duration);
+    
+    // 2. Birds Used
+    this.animateCountUp("statBirdsUsed", 0, this.birdsFired, duration, (val) => `${val}/${this.totalBirds}`);
+    
+    // 3. Pigs Defeated
+    this.animateCountUp("statPigsKilled", 0, this.pigsKilled, duration);
+    
+    // 4. Accuracy %
+    const accuracyVal = Math.min(100, Math.round((this.pigsKilled / (this.birdsFired || 1)) * 100));
+    this.animateCountUp("statAccuracy", 0, accuracyVal, duration, (val) => `${val}%`);
+    
+    // 5. Time played
+    const formattedTime = (val) => {
+      const m = Math.floor(val / 60);
+      const s = Math.floor(val % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+    this.animateCountUp("statTime", 0, Math.floor(this.levelTime), duration, formattedTime);
+
+    // Unlock bird achievements progression
+    if (this.currentLevelId === 10) {
+      this.unlockAchievement("unlockGreen", "Mở Khóa Chim Xanh", "Hoàn thành Level 10 - Chim Boomerang đã gia nhập đội hình!");
+    } else if (this.currentLevelId === 12) {
+      this.unlockAchievement("unlockOrange", "Mở Khóa Chim Cam", "Hoàn thành Level 12 - Chim Cam Phình To sẵn sàng xuất kích!");
+    } else if (this.currentLevelId === 15) {
+      this.unlockAchievement("unlockPurple", "Mở Khóa Chim Tím", "Hoàn thành Level 15 - Siêu phẩm Chim Laser đã xuất hiện!");
+    }
+ 
     // Hide/show next level button
     const btnNext = document.getElementById("btnWinNext");
-    if (this.currentLevelId >= 10) {
+    if (this.currentLevelId >= 20) {
       btnNext.classList.add("hidden");
     } else {
       btnNext.classList.remove("hidden");
@@ -777,31 +865,88 @@ class GameController {
     ctx.save();
     ctx.translate(shakeX, shakeY);
 
-    // 1. Draw beautiful Sky-to-Horizon Backdrop Gradients
+    // 1. Draw beautiful Sky-to-Horizon Backdrop Gradients based on Time of Day
     const skyGrad = ctx.createLinearGradient(0, 0, 0, this.height);
-    skyGrad.addColorStop(0, "#4be0ff");    // Bright sky blue
-    skyGrad.addColorStop(0.4, "#a3f3ff");  // Light blue-cyan
-    skyGrad.addColorStop(0.75, "#e1faff"); // Soft white-cyan
-    skyGrad.addColorStop(1.0, "#f9fdff");  // Warm pale horizon
+    let farHillColor, midHillColor, nearHillColor, groundColor, grassColor, grassDecorColor;
+    
+    if (this.currentTimeOfDay === "sunset") {
+      skyGrad.addColorStop(0, "#2c1b4d"); // Deep purple
+      skyGrad.addColorStop(0.4, "#8a307f"); // Pinkish magenta
+      skyGrad.addColorStop(0.75, "#db5a42"); // Warm orange
+      skyGrad.addColorStop(1.0, "#f2a65a"); // Pale gold horizon
+      
+      farHillColor = "#684f7b";
+      midHillColor = "#8c4f5e";
+      nearHillColor = "#a65d50";
+      groundColor = "#5c382f";
+      grassColor = "#c08d24";
+      grassDecorColor = "#d39e2f";
+    } else if (this.currentTimeOfDay === "night") {
+      skyGrad.addColorStop(0, "#0b0c10"); // Deep space
+      skyGrad.addColorStop(0.3, "#1a2332"); // Indigo/midnight blue
+      skyGrad.addColorStop(0.7, "#28354a"); // Skyline
+      skyGrad.addColorStop(1.0, "#1e2736"); // Horizon
+      
+      farHillColor = "#17202a";
+      midHillColor = "#1f2d3d";
+      nearHillColor = "#2c3e50";
+      groundColor = "#1b2631";
+      grassColor = "#1e8449";
+      grassDecorColor = "#27ae60";
+    } else { // "day"
+      skyGrad.addColorStop(0, "#4be0ff");    // Bright sky blue
+      skyGrad.addColorStop(0.4, "#a3f3ff");  // Light blue-cyan
+      skyGrad.addColorStop(0.75, "#e1faff"); // Soft white-cyan
+      skyGrad.addColorStop(1.0, "#f9fdff");  // Warm pale horizon
+      
+      farHillColor = "#8fe1d9";
+      midHillColor = "#5cbfae";
+      nearHillColor = "#3ca98a";
+      groundColor = "#6d4c41";
+      grassColor = "#8cdb34";
+      grassDecorColor = "#8cdb34";
+    }
+    
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, this.width, this.height);
 
-    // Draw Glowing Sun (Behind clouds)
-    const sunGrad = ctx.createRadialGradient(850 - this.cameraX * 0.15, 120, 10, 850 - this.cameraX * 0.15, 120, 220);
-    sunGrad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-    sunGrad.addColorStop(0.2, "rgba(255, 253, 200, 0.85)");
-    sunGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.3)");
-    sunGrad.addColorStop(1.0, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = sunGrad;
-    ctx.beginPath();
-    ctx.arc(850 - this.cameraX * 0.15, 120, 220, 0, Math.PI * 2);
-    ctx.fill();
+    // Draw Glowing Sun or Crescent Moon (Behind clouds)
+    if (this.currentTimeOfDay === "night") {
+      // Draw Moon
+      ctx.save();
+      ctx.translate(850 - this.cameraX * 0.15, 120);
+      ctx.fillStyle = "#f4f6f7";
+      ctx.shadowColor = "rgba(244, 246, 247, 0.65)";
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(0, 0, 32, 0, Math.PI * 2);
+      ctx.fill();
+      // Cut out crescent shape
+      ctx.fillStyle = skyGrad;
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(12, -5, 30, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      const sunColor = this.currentTimeOfDay === "sunset" ? "rgba(255, 110, 0, " : "rgba(255, 255, 255, ";
+      const sunGrad = ctx.createRadialGradient(850 - this.cameraX * 0.15, 120, 10, 850 - this.cameraX * 0.15, 120, 220);
+      sunGrad.addColorStop(0, sunColor + "1.0)");
+      sunGrad.addColorStop(0.2, this.currentTimeOfDay === "sunset" ? "rgba(255, 160, 0, 0.85)" : "rgba(255, 253, 200, 0.85)");
+      sunGrad.addColorStop(0.5, sunColor + "0.3)");
+      sunGrad.addColorStop(1.0, sunColor + "0)");
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(850 - this.cameraX * 0.15, 120, 220, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    // 2. Draw Clouds
-    ctx.fillStyle = "rgba(255, 255, 255, 0.65)"; // Soft white daylight clouds
+    // 2. Draw Clouds (Toned for sunset/night)
+    const cloudColor = this.currentTimeOfDay === "night" ? "rgba(100, 110, 130, 0.35)" : this.currentTimeOfDay === "sunset" ? "rgba(230, 170, 170, 0.5)" : "rgba(255, 255, 255, 0.65)";
+    ctx.fillStyle = cloudColor;
     this.clouds.forEach(cloud => {
       ctx.beginPath();
-      // Draw fluffy cloud using multiple overlapping arcs
       ctx.arc(cloud.x - this.cameraX, cloud.y, cloud.h, 0, Math.PI * 2);
       ctx.arc(cloud.x - this.cameraX + cloud.w * 0.3, cloud.y - cloud.h * 0.4, cloud.h * 1.2, 0, Math.PI * 2);
       ctx.arc(cloud.x - this.cameraX + cloud.w * 0.6, cloud.y, cloud.h * 0.9, 0, Math.PI * 2);
@@ -814,36 +959,36 @@ class GameController {
     });
 
     // 3. Draw hills in the far background
-    // Far layer (slower parallax, light blue-green/teal)
-    ctx.fillStyle = "#8fe1d9";
+    // Far layer (slower parallax)
+    ctx.fillStyle = farHillColor;
     ctx.beginPath();
     ctx.ellipse(300 - this.cameraX * 0.15, 540, 450, 110, 0, 0, Math.PI * 2);
     ctx.ellipse(950 - this.cameraX * 0.15, 550, 550, 130, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mid layer (medium parallax, emerald teal)
-    ctx.fillStyle = "#5cbfae";
+    // Mid layer (medium parallax)
+    ctx.fillStyle = midHillColor;
     ctx.beginPath();
     ctx.ellipse(600 - this.cameraX * 0.3, 550, 480, 95, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Near layer (faster parallax, rich green)
-    ctx.fillStyle = "#3ca98a";
+    // Near layer (faster parallax)
+    ctx.fillStyle = nearHillColor;
     ctx.beginPath();
     ctx.ellipse(150 - this.cameraX * 0.45, 565, 300, 75, 0, 0, Math.PI * 2);
     ctx.ellipse(1080 - this.cameraX * 0.45, 570, 380, 85, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // 4. Draw Ground
-    ctx.fillStyle = "#6d4c41"; // Warm soil brown structure
+    ctx.fillStyle = groundColor; // Warm soil brown structure
     ctx.fillRect(0, this.height - 30, this.width, 30);
 
     // Top grass layer
-    ctx.fillStyle = "#8cdb34"; // Bright vibrant green grass
+    ctx.fillStyle = grassColor; // Bright vibrant green grass
     ctx.fillRect(0, this.height - 34, this.width, 4);
 
     // Draw little grass decorations waving
-    ctx.strokeStyle = "#8cdb34";
+    ctx.strokeStyle = grassDecorColor;
     ctx.lineWidth = 1.5;
     const waveOffset = Math.sin(timestampToSec() * 4) * 3;
     for (let x = 20; x < this.width; x += 60) {
@@ -888,6 +1033,28 @@ class GameController {
       ctx.fill();
       ctx.restore();
     });
+
+    // 11. Draw weather rain overlay
+    if (this.currentWeather === "rain") {
+      ctx.strokeStyle = "rgba(174, 214, 241, 0.45)";
+      ctx.lineWidth = 1.0;
+      this.rainDrops.forEach(r => {
+        ctx.beginPath();
+        ctx.moveTo(r.x, r.y);
+        ctx.lineTo(r.x - 2, r.y + r.length);
+        ctx.stroke();
+      });
+    }
+
+    // 12. Draw weather snow overlay
+    if (this.currentWeather === "snow") {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      this.snowFlakes.forEach(s => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
 
     ctx.restore(); // Restore screen shake translation matrix
   }
@@ -1096,6 +1263,122 @@ class GameController {
         ctx.stroke();
       }
       ctx.restore();
+    });
+  }
+
+  animateCountUp(elementId, start, end, duration, formatFn) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1.0);
+      const easeProgress = progress * (2 - progress); // quadratic ease out
+      const current = Math.floor(start + (end - start) * easeProgress);
+
+      el.innerText = formatFn ? formatFn(current) : current;
+
+      if (progress < 1.0) {
+        requestAnimationFrame(tick);
+      }
+    };
+
+    requestAnimationFrame(tick);
+  }
+
+  onBlockDestroyed() {
+    SaveManager.incrementStat("blocksDestroyed");
+    const state = SaveManager.load();
+    const totalDestroyed = state.stats ? state.stats.blocksDestroyed : 0;
+    if (totalDestroyed >= 100) {
+      this.unlockAchievement("destroy100", "Kẻ Hủy Diệt Khối", "Tích lũy phá hủy thành công 100 khối vật liệu!");
+    }
+  }
+
+  onPigKilled(type) {
+    this.pigsKilled++;
+    this.pigsKilledInCurrentTurn++;
+
+    // First Blood achievement
+    this.unlockAchievement("firstBlood", "Chiến Tích Đầu Tiên", "Tiêu diệt chú heo đầu tiên trong trò chơi!");
+
+    // Triple Kill achievement
+    if (this.pigsKilledInCurrentTurn >= 3) {
+      this.unlockAchievement("tripleKill", "Triple Kill!", "Hạ gục liên tiếp 3 chú heo trong một lượt bắn!");
+    }
+
+    // King Slayer achievement
+    if (type === "king") {
+      this.unlockAchievement("kingSlayer", "Kẻ Diệt Vua", "Đánh bại Vua Heo Boss tối thượng!");
+    }
+  }
+
+  unlockAchievement(key, name, desc) {
+    const newlyUnlocked = SaveManager.unlockAchievement(key);
+    if (newlyUnlocked) {
+      // Play achievement jingle
+      try {
+        AudioSynth.play("win");
+      } catch (e) {}
+
+      // Create toast notification banner
+      const toast = document.createElement("div");
+      toast.className = "achievement-toast";
+      toast.innerHTML = `
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-details">
+          <div class="achievement-title">${name}</div>
+          <div class="achievement-desc">${desc}</div>
+        </div>
+      `;
+      document.getElementById("gameContainer").appendChild(toast);
+
+      // Force layout calculation to trigger CSS transition
+      toast.offsetHeight;
+      toast.classList.add("show");
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => {
+          toast.remove();
+        }, 500);
+      }, 4000);
+    }
+  }
+
+  renderAchievements() {
+    const list = document.getElementById("achievementsList");
+    if (!list) return;
+    list.innerHTML = "";
+
+    const state = SaveManager.load();
+    const achievements = state.achievements || {};
+
+    const gallery = [
+      { key: "firstBlood", name: "Chiến Tích Đầu Tiên", desc: "Hạ gục chú heo đầu tiên trong trò chơi.", icon: "💥" },
+      { key: "destroy100", name: "Kẻ Hủy Diệt Khối", desc: "Tích lũy phá hủy 100 khối vật liệu.", icon: "🪵" },
+      { key: "tripleKill", name: "Đại Sát Thủ (Triple)", desc: "Tiêu diệt 3 chú heo trong cùng một lượt bắn.", icon: "🎯" },
+      { key: "kingSlayer", name: "Kẻ Diệt Vua", desc: "Hạ gục Vua Heo Boss tại Level 10.", icon: "👑" },
+      { key: "threeStarsMaster", name: "Bậc Thầy 3 Sao", desc: "Đạt đánh giá 3 sao ở bất kỳ màn chơi nào.", icon: "⭐" },
+      { key: "unlockGreen", name: "Mở Khóa Chim Xanh", desc: "Chiêu mộ thành công Chim Boomerang.", icon: "🪃" },
+      { key: "unlockOrange", name: "Mở Khóa Chim Cam", desc: "Chiêu mộ thành công Chim Phình To.", icon: "🎈" },
+      { key: "unlockPurple", name: "Mở Khóa Chim Tím", desc: "Chiêu mộ thành công Chim Laser.", icon: "⚡" }
+    ];
+
+    gallery.forEach(ach => {
+      const isUnlocked = achievements[ach.key] === true;
+      const card = document.createElement("div");
+      card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+      card.innerHTML = `
+        <div class="achievement-card-icon">${isUnlocked ? ach.icon : '🔒'}</div>
+        <div class="achievement-card-info">
+          <div class="achievement-card-name">${ach.name}</div>
+          <div class="achievement-card-desc">${isUnlocked ? ach.desc : 'Đang khóa (Chưa đạt điều kiện)'}</div>
+        </div>
+      `;
+      list.appendChild(card);
     });
   }
 }

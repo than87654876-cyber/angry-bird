@@ -323,5 +323,269 @@ export const Levels = [
       two: 14000,
       three: 20500
     }
+  },
+  {
+    id: 11,
+    name: "Màn 11: Chim Boomerang Vòng Góc",
+    difficulty: "Medium",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["green", "green", "red"],
+    blocks: [
+      { type: "stone", x: 1100, y: 450, w: 40, h: 200 },
+      { type: "stone", x: 1100, y: 310, w: 100, h: 40 },
+      { type: "wood", x: 1300, y: 500, w: 20, h: 100 },
+      { type: "wood", x: 1400, y: 500, w: 20, h: 100 },
+      { type: "glass", x: 1350, y: 440, w: 120, h: 20 }
+    ],
+    pigs: [
+      { type: "regular", x: 1350, y: 500 },
+      { type: "small", x: 1350, y: 400 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 6000,
+      three: 9500
+    }
+  },
+  {
+    id: 12,
+    name: "Màn 12: Sự Trỗi Dậy Của Chim Cam",
+    difficulty: "Medium",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["orange", "orange", "yellow"],
+    blocks: [
+      { type: "wood", x: 1200, y: 490, w: 20, h: 100 },
+      { type: "wood", x: 1280, y: 490, w: 20, h: 100 },
+      { type: "wood", x: 1240, y: 430, w: 100, h: 20 },
+      { type: "wood", x: 1210, y: 370, w: 20, h: 100 },
+      { type: "wood", x: 1270, y: 370, w: 20, h: 100 },
+      { type: "wood", x: 1240, y: 310, w: 100, h: 20 },
+      { type: "glass", x: 1240, y: 270, w: 60, h: 60 }
+    ],
+    pigs: [
+      { type: "regular", x: 1240, y: 490 },
+      { type: "helmet", x: 1240, y: 370 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 8000,
+      three: 12000
+    }
+  },
+  {
+    id: 13,
+    name: "Màn 13: Tia Laser Xuyên Thấu",
+    difficulty: "Medium",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["purple", "purple", "blue"],
+    blocks: [
+      { type: "glass", x: 1200, y: 500, w: 80, h: 15 },
+      { type: "wood", x: 1200, y: 450, w: 80, h: 15 },
+      { type: "glass", x: 1400, y: 500, w: 80, h: 15 },
+      { type: "wood", x: 1400, y: 450, w: 80, h: 15 },
+      { type: "stone", x: 1300, y: 480, w: 30, h: 120 }
+    ],
+    pigs: [
+      { type: "regular", x: 1200, y: 470 },
+      { type: "helmet", x: 1400, y: 470 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 7000,
+      three: 10000
+    }
+  },
+  {
+    id: 14,
+    name: "Màn 14: Kích Bại Từ Phía Sau",
+    difficulty: "Hard",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["green", "green", "yellow", "blue"],
+    blocks: [
+      { type: "stone", x: 1100, y: 460, w: 40, h: 180 },
+      { type: "stone", x: 1400, y: 460, w: 40, h: 180 },
+      { type: "wood", x: 1250, y: 500, w: 200, h: 20 },
+      { type: "glass", x: 1250, y: 450, w: 100, h: 20 }
+    ],
+    pigs: [
+      { type: "moustache", x: 1250, y: 490 },
+      { type: "regular", x: 1200, y: 490 },
+      { type: "regular", x: 1300, y: 490 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 8500,
+      three: 13000
+    }
+  },
+  {
+    id: 15,
+    name: "Màn 15: Liên Quân Boomerang & Phình To",
+    difficulty: "Hard",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["green", "orange", "red"],
+    blocks: [
+      { type: "wood", x: 1150, y: 490, w: 20, h: 100 },
+      { type: "wood", x: 1250, y: 490, w: 20, h: 100 },
+      { type: "stone", x: 1200, y: 430, w: 120, h: 20 },
+      { type: "tnt", x: 1200, y: 490, w: 40, h: 40 },
+      { type: "glass", x: 1200, y: 370, w: 80, h: 80 }
+    ],
+    pigs: [
+      { type: "helmet", x: 1200, y: 390 },
+      { type: "moustache", x: 1100, y: 500 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 10000,
+      three: 15000
+    }
+  },
+  {
+    id: 16,
+    name: "Màn 16: Tháp Đa Tầng Cực Hạn",
+    difficulty: "Hard",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["orange", "purple", "black"],
+    blocks: [
+      { type: "stone", x: 1100, y: 490, w: 30, h: 100 },
+      { type: "stone", x: 1250, y: 490, w: 30, h: 100 },
+      { type: "wood", x: 1175, y: 430, w: 180, h: 20 },
+      { type: "glass", x: 1140, y: 370, w: 15, h: 100 },
+      { type: "glass", x: 1210, y: 370, w: 15, h: 100 },
+      { type: "wood", x: 1175, y: 310, w: 100, h: 15 },
+      { type: "tnt", x: 1175, y: 490, w: 40, h: 40 }
+    ],
+    pigs: [
+      { type: "moustache", x: 1175, y: 390 },
+      { type: "helmet", x: 1120, y: 490 },
+      { type: "helmet", x: 1230, y: 490 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 12000,
+      three: 18000
+    }
+  },
+  {
+    id: 17,
+    name: "Màn 17: Phục Kích Mật Phòng",
+    difficulty: "Hard",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["green", "purple", "white"],
+    blocks: [
+      { type: "stone", x: 1150, y: 450, w: 40, h: 200 },
+      { type: "stone", x: 1350, y: 450, w: 40, h: 200 },
+      { type: "glass", x: 1250, y: 500, w: 150, h: 15 },
+      { type: "wood", x: 1250, y: 400, w: 150, h: 15 }
+    ],
+    pigs: [
+      { type: "helmet", x: 1250, y: 470 },
+      { type: "regular", x: 1250, y: 430 },
+      { type: "regular", x: 1400, y: 500 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 11000,
+      three: 16500
+    }
+  },
+  {
+    id: 18,
+    name: "Màn 18: Lâu Đài Đá Vỡ Vụn",
+    difficulty: "Hard",
+    width: 1800,
+    sling: { x: 200, y: 440 },
+    birds: ["orange", "orange", "black", "yellow"],
+    blocks: [
+      { type: "stone", x: 1150, y: 490, w: 40, h: 100 },
+      { type: "stone", x: 1300, y: 490, w: 40, h: 100 },
+      { type: "wood", x: 1225, y: 430, w: 160, h: 20 },
+      { type: "wood", x: 1200, y: 370, w: 20, h: 100 },
+      { type: "wood", x: 1250, y: 370, w: 20, h: 100 },
+      { type: "tnt", x: 1225, y: 490, w: 45, h: 45 }
+    ],
+    pigs: [
+      { type: "moustache", x: 1225, y: 390 },
+      { type: "helmet", x: 1100, y: 500 },
+      { type: "helmet", x: 1350, y: 500 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 12500,
+      three: 19000
+    }
+  },
+  {
+    id: 19,
+    name: "Màn 19: Tam Hùng Phối Hợp",
+    difficulty: "Extreme",
+    width: 2000,
+    sling: { x: 200, y: 440 },
+    birds: ["green", "orange", "purple", "red"],
+    blocks: [
+      { type: "stone", x: 1200, y: 490, w: 40, h: 100 },
+      { type: "stone", x: 1400, y: 490, w: 40, h: 100 },
+      { type: "wood", x: 1300, y: 430, w: 220, h: 20 },
+      { type: "glass", x: 1250, y: 370, w: 20, h: 100 },
+      { type: "glass", x: 1350, y: 370, w: 20, h: 100 },
+      { type: "stone", x: 1300, y: 310, w: 120, h: 20 },
+      { type: "tnt", x: 1100, y: 510, w: 40, h: 40 },
+      { type: "tnt", x: 1500, y: 510, w: 40, h: 40 }
+    ],
+    pigs: [
+      { type: "king", x: 1300, y: 490 },
+      { type: "moustache", x: 1300, y: 370 },
+      { type: "helmet", x: 1100, y: 460 },
+      { type: "helmet", x: 1500, y: 460 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 16000,
+      three: 23000
+    }
+  },
+  {
+    id: 20,
+    name: "Màn 20: Đại Chiến Thần Bát Đại",
+    difficulty: "Extreme",
+    width: 2200,
+    sling: { x: 200, y: 440 },
+    birds: ["red", "blue", "yellow", "black", "white", "green", "orange", "purple"],
+    blocks: [
+      { type: "stone", x: 1200, y: 490, w: 50, h: 100 },
+      { type: "stone", x: 1450, y: 490, w: 50, h: 100 },
+      { type: "stone", x: 1325, y: 430, w: 300, h: 20 },
+      { type: "wood", x: 1250, y: 370, w: 25, h: 100 },
+      { type: "wood", x: 1400, y: 370, w: 25, h: 100 },
+      { type: "wood", x: 1325, y: 310, w: 180, h: 20 },
+      { type: "glass", x: 1290, y: 250, w: 15, h: 100 },
+      { type: "glass", x: 1360, y: 250, w: 15, h: 100 },
+      { type: "glass", x: 1325, y: 190, w: 90, h: 15 },
+      { type: "tnt", x: 1325, y: 490, w: 40, h: 40 },
+      { type: "tnt", x: 1050, y: 510, w: 40, h: 40 },
+      { type: "tnt", x: 1600, y: 510, w: 40, h: 40 }
+    ],
+    pigs: [
+      { type: "king", x: 1325, y: 370 },
+      { type: "moustache", x: 1325, y: 490 },
+      { type: "moustache", x: 1325, y: 230 },
+      { type: "helmet", x: 1220, y: 490 },
+      { type: "helmet", x: 1430, y: 490 },
+      { type: "helmet", x: 1050, y: 460 },
+      { type: "helmet", x: 1600, y: 460 }
+    ],
+    starThresholds: {
+      one: 1,
+      two: 22000,
+      three: 32000
+    }
   }
 ];
