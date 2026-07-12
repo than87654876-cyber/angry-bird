@@ -1149,7 +1149,7 @@ class GameController {
       ctx.lineWidth = 2.5;
 
       ctx.beginPath();
-      ctx.rect(scrollSlingX - 6, sling.y, 12, 100);
+      ctx.rect(scrollSlingX - 6, sling.y, 12, (this.height - 30) - sling.y);
       ctx.fill();
       ctx.stroke();
 
