@@ -840,20 +840,20 @@ class GameController {
 
     // Animated Count-Ups for Statistics
     const duration = 1200; // 1.2 seconds of animation
-    
+
     // 1. Animated Score
     this.animateCountUp("statWinScore", 0, finalScore, duration);
-    
+
     // 2. Birds Used
     this.animateCountUp("statBirdsUsed", 0, this.birdsFired, duration, (val) => `${val}/${this.totalBirds}`);
-    
+
     // 3. Pigs Defeated
     this.animateCountUp("statPigsKilled", 0, this.pigsKilled, duration);
-    
+
     // 4. Accuracy %
     const accuracyVal = Math.min(100, Math.round((this.pigsKilled / (this.birdsFired || 1)) * 100));
     this.animateCountUp("statAccuracy", 0, accuracyVal, duration, (val) => `${val}%`);
-    
+
     // 5. Time played
     const formattedTime = (val) => {
       const m = Math.floor(val / 60);
@@ -870,7 +870,7 @@ class GameController {
     } else if (this.currentLevelId === 15) {
       this.unlockAchievement("unlockPurple", "Mở Khóa Chim Tím", "Hoàn thành Level 15 - Siêu phẩm Chim Laser đã xuất hiện!");
     }
- 
+
     // Hide/show next level button
     const btnNext = document.getElementById("btnWinNext");
     if (this.currentLevelId >= 20) {
@@ -898,13 +898,13 @@ class GameController {
     // 1. Draw beautiful Sky-to-Horizon Backdrop Gradients based on Time of Day
     const skyGrad = ctx.createLinearGradient(0, 0, 0, this.height);
     let farHillColor, midHillColor, nearHillColor, groundColor, grassColor, grassDecorColor;
-    
+
     if (this.currentTimeOfDay === "sunset") {
       skyGrad.addColorStop(0, "#2c1b4d"); // Deep purple
       skyGrad.addColorStop(0.4, "#8a307f"); // Pinkish magenta
       skyGrad.addColorStop(0.75, "#db5a42"); // Warm orange
       skyGrad.addColorStop(1.0, "#f2a65a"); // Pale gold horizon
-      
+
       farHillColor = "#684f7b";
       midHillColor = "#8c4f5e";
       nearHillColor = "#a65d50";
@@ -916,7 +916,7 @@ class GameController {
       skyGrad.addColorStop(0.3, "#1a2332"); // Indigo/midnight blue
       skyGrad.addColorStop(0.7, "#28354a"); // Skyline
       skyGrad.addColorStop(1.0, "#1e2736"); // Horizon
-      
+
       farHillColor = "#17202a";
       midHillColor = "#1f2d3d";
       nearHillColor = "#2c3e50";
@@ -928,7 +928,7 @@ class GameController {
       skyGrad.addColorStop(0.4, "#a3f3ff");  // Light blue-cyan
       skyGrad.addColorStop(0.75, "#e1faff"); // Soft white-cyan
       skyGrad.addColorStop(1.0, "#f9fdff");  // Warm pale horizon
-      
+
       farHillColor = "#8fe1d9";
       midHillColor = "#5cbfae";
       nearHillColor = "#3ca98a";
@@ -936,7 +936,7 @@ class GameController {
       grassColor = "#8cdb34";
       grassDecorColor = "#8cdb34";
     }
-    
+
     ctx.fillStyle = skyGrad;
     ctx.fillRect(0, 0, this.width, this.height);
 
@@ -1351,7 +1351,7 @@ class GameController {
       // Play achievement jingle
       try {
         AudioSynth.play("win");
-      } catch (e) {}
+      } catch (e) { }
 
       // Create toast notification banner
       const toast = document.createElement("div");
