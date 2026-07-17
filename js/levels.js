@@ -330,22 +330,24 @@ export const Levels = [
     difficulty: "Medium",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["green", "green", "red"],
+    birds: ["red", "red", "green"],
     blocks: [
-      { type: "stone", x: 1100, y: 450, w: 40, h: 200 },
-      { type: "stone", x: 1100, y: 310, w: 100, h: 40 },
-      { type: "wood", x: 1300, y: 500, w: 20, h: 100 },
-      { type: "wood", x: 1400, y: 500, w: 20, h: 100 },
-      { type: "glass", x: 1350, y: 440, w: 120, h: 20 }
+      { type: "stone", x: 1100, y: 470, w: 40, h: 200 },
+      { type: "stone", x: 1100, y: 350, w: 100, h: 40 },
+      { type: "stone", x: 1300, y: 520, w: 25, h: 100 },
+      { type: "stone", x: 1400, y: 520, w: 25, h: 100 },
+      { type: "wood", x: 1350, y: 460, w: 130, h: 20 },
+      { type: "glass", x: 1350, y: 400, w: 60, h: 60 }
     ],
     pigs: [
-      { type: "regular", x: 1350, y: 500 },
-      { type: "small", x: 1350, y: 400 }
+      { type: "moustache", x: 1350, y: 520 },
+      { type: "helmet", x: 1350, y: 430 },
+      { type: "regular", x: 1100, y: 310 }
     ],
     starThresholds: {
       one: 1,
       two: 6000,
-      three: 9500
+      three: 8500
     }
   },
   {
@@ -354,24 +356,28 @@ export const Levels = [
     difficulty: "Medium",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["orange", "orange", "yellow"],
+    birds: ["yellow", "orange", "blue"],
     blocks: [
-      { type: "wood", x: 1200, y: 490, w: 20, h: 100 },
-      { type: "wood", x: 1280, y: 490, w: 20, h: 100 },
-      { type: "wood", x: 1240, y: 430, w: 100, h: 20 },
-      { type: "wood", x: 1210, y: 370, w: 20, h: 100 },
-      { type: "wood", x: 1270, y: 370, w: 20, h: 100 },
-      { type: "wood", x: 1240, y: 310, w: 100, h: 20 },
-      { type: "glass", x: 1240, y: 270, w: 60, h: 60 }
+      { type: "wood", x: 1200, y: 520, w: 20, h: 100 },
+      { type: "wood", x: 1280, y: 520, w: 20, h: 100 },
+      { type: "wood", x: 1240, y: 460, w: 100, h: 20 },
+      { type: "wood", x: 1210, y: 400, w: 20, h: 100 },
+      { type: "wood", x: 1270, y: 400, w: 20, h: 100 },
+      { type: "wood", x: 1240, y: 340, w: 100, h: 20 },
+      { type: "stone", x: 1140, y: 520, w: 30, h: 100 },
+      { type: "stone", x: 1340, y: 520, w: 30, h: 100 },
+      { type: "glass", x: 1240, y: 300, w: 60, h: 60 }
     ],
     pigs: [
-      { type: "regular", x: 1240, y: 490 },
-      { type: "helmet", x: 1240, y: 370 }
+      { type: "moustache", x: 1240, y: 520 },
+      { type: "helmet", x: 1240, y: 400 },
+      { type: "regular", x: 1140, y: 450 },
+      { type: "regular", x: 1340, y: 450 }
     ],
     starThresholds: {
       one: 1,
-      two: 8000,
-      three: 12000
+      two: 7500,
+      three: 10500
     }
   },
   {
@@ -380,22 +386,23 @@ export const Levels = [
     difficulty: "Medium",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["purple", "purple", "blue"],
+    birds: ["blue", "purple", "yellow"],
     blocks: [
-      { type: "glass", x: 1200, y: 500, w: 80, h: 15 },
-      { type: "wood", x: 1200, y: 450, w: 80, h: 15 },
-      { type: "glass", x: 1400, y: 500, w: 80, h: 15 },
-      { type: "wood", x: 1400, y: 450, w: 80, h: 15 },
-      { type: "stone", x: 1300, y: 480, w: 30, h: 120 }
+      { type: "stone", x: 1150, y: 470, w: 40, h: 200 },
+      { type: "stone", x: 1350, y: 470, w: 40, h: 200 },
+      { type: "wood", x: 1250, y: 520, w: 100, h: 20 },
+      { type: "glass", x: 1250, y: 460, w: 80, h: 100 },
+      { type: "wood", x: 1250, y: 400, w: 100, h: 20 }
     ],
     pigs: [
-      { type: "regular", x: 1200, y: 470 },
-      { type: "helmet", x: 1400, y: 470 }
+      { type: "moustache", x: 1250, y: 500 },
+      { type: "helmet", x: 1150, y: 340 },
+      { type: "helmet", x: 1350, y: 340 }
     ],
     starThresholds: {
       one: 1,
-      two: 7000,
-      three: 10000
+      two: 6500,
+      three: 9200
     }
   },
   {
@@ -404,22 +411,23 @@ export const Levels = [
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["green", "green", "yellow", "blue"],
+    birds: ["blue", "yellow", "green"],
     blocks: [
-      { type: "stone", x: 1100, y: 460, w: 40, h: 180 },
-      { type: "stone", x: 1400, y: 460, w: 40, h: 180 },
-      { type: "wood", x: 1250, y: 500, w: 200, h: 20 },
-      { type: "glass", x: 1250, y: 450, w: 100, h: 20 }
+      { type: "stone", x: 1100, y: 470, w: 40, h: 200 },
+      { type: "stone", x: 1400, y: 470, w: 40, h: 200 },
+      { type: "wood", x: 1250, y: 520, w: 200, h: 20 },
+      { type: "glass", x: 1250, y: 460, w: 120, h: 20 },
+      { type: "stone", x: 1250, y: 400, w: 60, h: 60 }
     ],
     pigs: [
       { type: "moustache", x: 1250, y: 490 },
-      { type: "regular", x: 1200, y: 490 },
-      { type: "regular", x: 1300, y: 490 }
+      { type: "helmet", x: 1190, y: 490 },
+      { type: "helmet", x: 1310, y: 490 }
     ],
     starThresholds: {
       one: 1,
-      two: 8500,
-      three: 13000
+      two: 6500,
+      three: 9000
     }
   },
   {
@@ -428,22 +436,24 @@ export const Levels = [
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["green", "orange", "red"],
+    birds: ["red", "orange", "green"],
     blocks: [
-      { type: "wood", x: 1150, y: 490, w: 20, h: 100 },
-      { type: "wood", x: 1250, y: 490, w: 20, h: 100 },
-      { type: "stone", x: 1200, y: 430, w: 120, h: 20 },
-      { type: "tnt", x: 1200, y: 490, w: 40, h: 40 },
-      { type: "glass", x: 1200, y: 370, w: 80, h: 80 }
+      { type: "wood", x: 1150, y: 520, w: 20, h: 100 },
+      { type: "wood", x: 1250, y: 520, w: 20, h: 100 },
+      { type: "stone", x: 1200, y: 460, w: 120, h: 20 },
+      { type: "tnt", x: 1200, y: 520, w: 40, h: 40 },
+      { type: "glass", x: 1200, y: 400, w: 80, h: 80 },
+      { type: "stone", x: 1100, y: 520, w: 30, h: 100 }
     ],
     pigs: [
-      { type: "helmet", x: 1200, y: 390 },
-      { type: "moustache", x: 1100, y: 500 }
+      { type: "moustache", x: 1200, y: 340 },
+      { type: "helmet", x: 1100, y: 450 },
+      { type: "helmet", x: 1290, y: 520 }
     ],
     starThresholds: {
       one: 1,
-      two: 10000,
-      three: 15000
+      two: 7000,
+      three: 9500
     }
   },
   {
@@ -452,25 +462,27 @@ export const Levels = [
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["orange", "purple", "black"],
+    birds: ["yellow", "black", "orange"],
     blocks: [
-      { type: "stone", x: 1100, y: 490, w: 30, h: 100 },
-      { type: "stone", x: 1250, y: 490, w: 30, h: 100 },
-      { type: "wood", x: 1175, y: 430, w: 180, h: 20 },
-      { type: "glass", x: 1140, y: 370, w: 15, h: 100 },
-      { type: "glass", x: 1210, y: 370, w: 15, h: 100 },
-      { type: "wood", x: 1175, y: 310, w: 100, h: 15 },
-      { type: "tnt", x: 1175, y: 490, w: 40, h: 40 }
+      { type: "stone", x: 1100, y: 520, w: 30, h: 100 },
+      { type: "stone", x: 1250, y: 520, w: 30, h: 100 },
+      { type: "wood", x: 1175, y: 460, w: 180, h: 20 },
+      { type: "glass", x: 1140, y: 400, w: 15, h: 100 },
+      { type: "glass", x: 1210, y: 400, w: 15, h: 100 },
+      { type: "wood", x: 1175, y: 340, w: 100, h: 15 },
+      { type: "tnt", x: 1175, y: 520, w: 40, h: 40 },
+      { type: "stone", x: 1175, y: 300, w: 40, h: 60 }
     ],
     pigs: [
-      { type: "moustache", x: 1175, y: 390 },
-      { type: "helmet", x: 1120, y: 490 },
-      { type: "helmet", x: 1230, y: 490 }
+      { type: "moustache", x: 1175, y: 410 },
+      { type: "helmet", x: 1120, y: 520 },
+      { type: "helmet", x: 1230, y: 520 },
+      { type: "regular", x: 1175, y: 250 }
     ],
     starThresholds: {
       one: 1,
-      two: 12000,
-      three: 18000
+      two: 8500,
+      three: 11000
     }
   },
   {
@@ -479,22 +491,23 @@ export const Levels = [
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["green", "purple", "white"],
+    birds: ["white", "purple", "blue"],
     blocks: [
-      { type: "stone", x: 1150, y: 450, w: 40, h: 200 },
-      { type: "stone", x: 1350, y: 450, w: 40, h: 200 },
-      { type: "glass", x: 1250, y: 500, w: 150, h: 15 },
-      { type: "wood", x: 1250, y: 400, w: 150, h: 15 }
+      { type: "stone", x: 1150, y: 470, w: 40, h: 200 },
+      { type: "stone", x: 1350, y: 470, w: 40, h: 200 },
+      { type: "glass", x: 1250, y: 520, w: 160, h: 15 },
+      { type: "wood", x: 1250, y: 420, w: 160, h: 15 },
+      { type: "stone", x: 1250, y: 370, w: 30, h: 80 }
     ],
     pigs: [
-      { type: "helmet", x: 1250, y: 470 },
-      { type: "regular", x: 1250, y: 430 },
-      { type: "regular", x: 1400, y: 500 }
+      { type: "moustache", x: 1250, y: 490 },
+      { type: "moustache", x: 1250, y: 440 },
+      { type: "helmet", x: 1250, y: 320 }
     ],
     starThresholds: {
       one: 1,
-      two: 11000,
-      three: 16500
+      two: 7500,
+      three: 10000
     }
   },
   {
@@ -503,24 +516,26 @@ export const Levels = [
     difficulty: "Hard",
     width: 1800,
     sling: { x: 200, y: 440 },
-    birds: ["orange", "orange", "black", "yellow"],
+    birds: ["blue", "black", "orange", "yellow"],
     blocks: [
-      { type: "stone", x: 1150, y: 490, w: 40, h: 100 },
-      { type: "stone", x: 1300, y: 490, w: 40, h: 100 },
-      { type: "wood", x: 1225, y: 430, w: 160, h: 20 },
-      { type: "wood", x: 1200, y: 370, w: 20, h: 100 },
-      { type: "wood", x: 1250, y: 370, w: 20, h: 100 },
-      { type: "tnt", x: 1225, y: 490, w: 45, h: 45 }
+      { type: "stone", x: 1150, y: 520, w: 40, h: 100 },
+      { type: "stone", x: 1300, y: 520, w: 40, h: 100 },
+      { type: "wood", x: 1225, y: 460, w: 160, h: 20 },
+      { type: "wood", x: 1200, y: 400, w: 20, h: 100 },
+      { type: "wood", x: 1250, y: 400, w: 20, h: 100 },
+      { type: "tnt", x: 1225, y: 520, w: 45, h: 45 },
+      { type: "stone", x: 1225, y: 340, w: 100, h: 20 }
     ],
     pigs: [
-      { type: "moustache", x: 1225, y: 390 },
-      { type: "helmet", x: 1100, y: 500 },
-      { type: "helmet", x: 1350, y: 500 }
+      { type: "moustache", x: 1225, y: 420 },
+      { type: "helmet", x: 1100, y: 520 },
+      { type: "helmet", x: 1350, y: 520 },
+      { type: "regular", x: 1225, y: 300 }
     ],
     starThresholds: {
       one: 1,
-      two: 12500,
-      three: 19000
+      two: 8800,
+      three: 12200
     }
   },
   {
@@ -529,27 +544,28 @@ export const Levels = [
     difficulty: "Extreme",
     width: 2000,
     sling: { x: 200, y: 440 },
-    birds: ["green", "orange", "purple", "red"],
+    birds: ["purple", "orange", "green", "red"],
     blocks: [
-      { type: "stone", x: 1200, y: 490, w: 40, h: 100 },
-      { type: "stone", x: 1400, y: 490, w: 40, h: 100 },
-      { type: "wood", x: 1300, y: 430, w: 220, h: 20 },
-      { type: "glass", x: 1250, y: 370, w: 20, h: 100 },
-      { type: "glass", x: 1350, y: 370, w: 20, h: 100 },
-      { type: "stone", x: 1300, y: 310, w: 120, h: 20 },
-      { type: "tnt", x: 1100, y: 510, w: 40, h: 40 },
-      { type: "tnt", x: 1500, y: 510, w: 40, h: 40 }
+      { type: "stone", x: 1200, y: 520, w: 40, h: 100 },
+      { type: "stone", x: 1400, y: 520, w: 40, h: 100 },
+      { type: "wood", x: 1300, y: 460, w: 220, h: 20 },
+      { type: "glass", x: 1250, y: 400, w: 20, h: 100 },
+      { type: "glass", x: 1350, y: 400, w: 20, h: 100 },
+      { type: "stone", x: 1300, y: 340, w: 120, h: 20 },
+      { type: "tnt", x: 1100, y: 520, w: 40, h: 40 },
+      { type: "tnt", x: 1500, y: 520, w: 40, h: 40 },
+      { type: "stone", x: 1300, y: 520, w: 30, h: 100 }
     ],
     pigs: [
-      { type: "king", x: 1300, y: 490 },
-      { type: "moustache", x: 1300, y: 370 },
-      { type: "helmet", x: 1100, y: 460 },
-      { type: "helmet", x: 1500, y: 460 }
+      { type: "king", x: 1300, y: 420 },
+      { type: "moustache", x: 1300, y: 490 },
+      { type: "helmet", x: 1100, y: 470 },
+      { type: "helmet", x: 1500, y: 470 }
     ],
     starThresholds: {
       one: 1,
-      two: 16000,
-      three: 23000
+      two: 12000,
+      three: 15500
     }
   },
   {
@@ -560,32 +576,33 @@ export const Levels = [
     sling: { x: 200, y: 440 },
     birds: ["red", "blue", "yellow", "black", "white", "green", "orange", "purple"],
     blocks: [
-      { type: "stone", x: 1200, y: 490, w: 50, h: 100 },
-      { type: "stone", x: 1450, y: 490, w: 50, h: 100 },
-      { type: "stone", x: 1325, y: 430, w: 300, h: 20 },
-      { type: "wood", x: 1250, y: 370, w: 25, h: 100 },
-      { type: "wood", x: 1400, y: 370, w: 25, h: 100 },
-      { type: "wood", x: 1325, y: 310, w: 180, h: 20 },
-      { type: "glass", x: 1290, y: 250, w: 15, h: 100 },
-      { type: "glass", x: 1360, y: 250, w: 15, h: 100 },
-      { type: "glass", x: 1325, y: 190, w: 90, h: 15 },
-      { type: "tnt", x: 1325, y: 490, w: 40, h: 40 },
-      { type: "tnt", x: 1050, y: 510, w: 40, h: 40 },
-      { type: "tnt", x: 1600, y: 510, w: 40, h: 40 }
+      { type: "stone", x: 1200, y: 520, w: 50, h: 100 },
+      { type: "stone", x: 1450, y: 520, w: 50, h: 100 },
+      { type: "stone", x: 1325, y: 460, w: 300, h: 20 },
+      { type: "wood", x: 1250, y: 400, w: 25, h: 100 },
+      { type: "wood", x: 1400, y: 400, w: 25, h: 100 },
+      { type: "wood", x: 1325, y: 340, w: 180, h: 20 },
+      { type: "glass", x: 1290, y: 280, w: 15, h: 100 },
+      { type: "glass", x: 1360, y: 280, w: 15, h: 100 },
+      { type: "glass", x: 1325, y: 220, w: 90, h: 15 },
+      { type: "tnt", x: 1325, y: 520, w: 40, h: 40 },
+      { type: "tnt", x: 1050, y: 520, w: 40, h: 40 },
+      { type: "tnt", x: 1600, y: 520, w: 40, h: 40 },
+      { type: "stone", x: 1325, y: 400, w: 40, h: 80 }
     ],
     pigs: [
-      { type: "king", x: 1325, y: 370 },
-      { type: "moustache", x: 1325, y: 490 },
-      { type: "moustache", x: 1325, y: 230 },
-      { type: "helmet", x: 1220, y: 490 },
-      { type: "helmet", x: 1430, y: 490 },
-      { type: "helmet", x: 1050, y: 460 },
-      { type: "helmet", x: 1600, y: 460 }
+      { type: "king", x: 1325, y: 280 },
+      { type: "moustache", x: 1325, y: 520 },
+      { type: "moustache", x: 1325, y: 430 },
+      { type: "helmet", x: 1220, y: 520 },
+      { type: "helmet", x: 1430, y: 520 },
+      { type: "helmet", x: 1050, y: 470 },
+      { type: "helmet", x: 1600, y: 470 }
     ],
     starThresholds: {
       one: 1,
-      two: 22000,
-      three: 32000
+      two: 18000,
+      three: 25000
     }
   }
 ];
